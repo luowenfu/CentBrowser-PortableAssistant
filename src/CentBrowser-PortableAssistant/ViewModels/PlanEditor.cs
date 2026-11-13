@@ -48,6 +48,7 @@ public sealed partial class PlanEditor : ObservableObject
         Raise(nameof(Destinations));
         Raise(nameof(DestinationsDetail));
         Raise(nameof(Problem));
+        Raise(nameof(ShowDestination));
     }
 
     private void LoadTargets(IEnumerable<UploadTarget> targets, IReadOnlyDictionary<string, bool>? checks)
@@ -151,6 +152,7 @@ public sealed partial class PlanEditor : ObservableObject
         Raise(nameof(DestinationsDetail));
         Raise(nameof(TemplateError));
         Raise(nameof(Problem));
+        Raise(nameof(ShowDestination));
         ContentChanged?.Invoke();
     }
 }

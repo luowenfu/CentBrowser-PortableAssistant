@@ -213,6 +213,9 @@ public sealed partial class PlanEditor
         }
     }
 
+    /// <summary>行李牌上有错误提示时，目的地让开位置。</summary>
+    public bool ShowDestination => string.IsNullOrEmpty(Problem);
+
     private void RaiseHint()
     {
         Raise(nameof(FormatHint));

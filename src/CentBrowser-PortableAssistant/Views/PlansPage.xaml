@@ -599,9 +599,11 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </StackPanel>
-                    <Line Grid.Column="6" Style="{StaticResource Perforation}" />
+                    <Line Grid.Column="6" Style="{StaticResource Perforation}"
+                          Visibility="{Binding ShowDestination, Converter={StaticResource Vis}}" />
                     <!-- 这一列吃掉剩余宽度。Stretch 再加最大宽度会居中，左侧间距就对不齐 -->
-                    <StackPanel Grid.Column="7" VerticalAlignment="Center" HorizontalAlignment="Left" MaxWidth="160">
+                    <StackPanel Grid.Column="7" VerticalAlignment="Center" HorizontalAlignment="Left" MaxWidth="160"
+                                Visibility="{Binding ShowDestination, Converter={StaticResource Vis}}">
                         <TextBlock Text="目的地" Style="{StaticResource TagLabel}" />
                         <TextBlock Text="{Binding Destinations}" Foreground="{StaticResource Text}" Margin="0,3,0,0" TextTrimming="CharacterEllipsis"
                                    ToolTip="{Binding DestinationsDetail}" />
