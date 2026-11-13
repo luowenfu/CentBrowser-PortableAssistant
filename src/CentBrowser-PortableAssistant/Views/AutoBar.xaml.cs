@@ -13,9 +13,6 @@ namespace CentBrowser_PortableAssistant.Views;
 /// <summary>主窗口底栏：开机启动、自动备份、居中的备份状态，以及待上传。</summary>
 public partial class AutoBar : UserControl
 {
-    /// <summary>限速下拉框各档对应的 KB/s，0 是不限速。</summary>
-    private static readonly int[] Limits = [0, 512, 1024, 2048, 5120];
-
     private readonly DispatcherTimer _statusHold = new() { Interval = TimeSpan.FromSeconds(8) };
     private bool _loading;
     private string? _dismissed;
@@ -28,6 +25,8 @@ public partial class AutoBar : UserControl
     public AutoBar()
     {
         InitializeComponent();
+        foreach (var option in SpeedLimits.Options)
+            LimitBox.Items.Add(new ComboBoxItem { Content = option.Label });
         App.Services.ConfigChanged += () => Dispatcher.BeginInvoke(Load);
         App.Status.Changed += () => Dispatcher.BeginInvoke(ShowStatus);
         var queue = App.Services.Queue;
@@ -75,10 +74,7 @@ public partial class AutoBar : UserControl
         StartSwitch.IsChecked = c.StartWithWindows;
         AutoSwitch.IsChecked = c.AutoEnabled;
         FrequencyBox.SelectedIndex = (int)c.Frequency;
-        // 配置里的值不在档位里（手改过配置文件）就落到最接近的一档
-        LimitBox.SelectedIndex = Array.IndexOf(Limits, c.SlowUploadKbps) is var i and >= 0
-            ? i
-            : Limits.Select((kbps, index) => (kbps, index)).MinBy(x => Math.Abs(x.kbps - c.SlowUploadKbps)).index;
+        LimitBox.SelectedIndex = SpeedLimits.IndexOf(c.SlowUploadKbps);
         UpdateEnabled();
         _loading = false;
     }
@@ -201,7 +197,7 @@ public partial class AutoBar : UserControl
     private void OnLimitChanged(object sender, SelectionChangedEventArgs e)
     {
         if (_loading || LimitBox.SelectedIndex < 0) return;
-        App.Services.Config.SlowUploadKbps = Limits[LimitBox.SelectedIndex];
+        App.Services.Config.SlowUploadKbps = SpeedLimits.Options[LimitBox.SelectedIndex].Kbps;
         App.Services.SaveConfig();
     }
 

@@ -24,6 +24,7 @@ public sealed class TrayIcon : IDisposable
 {
     private readonly NotifyIcon _icon;
     private readonly ToolStripMenuItem _backupMenu;
+    private readonly ToolStripMenuItem _limitMenu;
     private readonly Icon _base;
     private readonly Dictionary<TrayMark, Icon> _marks = new();
     private TrayMark _mark = TrayMark.None;
@@ -31,7 +32,8 @@ public sealed class TrayIcon : IDisposable
     public event Action? OpenRequested;
     /// <summary>方案 id 为空表示全部。第二个参数为真表示快速。</summary>
     public event Action<string?, bool>? BackupRequested;
-    public event Action? RetryRequested;
+    /// <summary>慢速限速，单位 KB/s，0 是不限速。</summary>
+    public event Action<int>? LimitRequested;
     public event Action? RecordsRequested;
     public event Action? ExitRequested;
     public event Action? Hovering;
@@ -46,11 +48,18 @@ public sealed class TrayIcon : IDisposable
         _icon = new NotifyIcon { Icon = _base, Text = App.TrayTitle(), Visible = true };
 
         _backupMenu = new ToolStripMenuItem("立即备份");
+        _limitMenu = new ToolStripMenuItem("慢速限速");
+        foreach (var (kbps, label) in SpeedLimits.Options)
+        {
+            var item = new ToolStripMenuItem(label) { Tag = kbps };
+            item.Click += (_, _) => LimitRequested?.Invoke(kbps);
+            _limitMenu.DropDownItems.Add(item);
+        }
 
         var menu = new ContextMenuStrip { ShowImageMargin = true };
         menu.Items.Add("打开主界面", null, (_, _) => OpenRequested?.Invoke());
         menu.Items.Add(_backupMenu);
-        menu.Items.Add("立即重试上传", null, (_, _) => RetryRequested?.Invoke());
+        menu.Items.Add(_limitMenu);
         menu.Items.Add("查询记录", null, (_, _) => RecordsRequested?.Invoke());
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add("退出", null, (_, _) => ExitRequested?.Invoke());
@@ -78,6 +87,15 @@ public sealed class TrayIcon : IDisposable
         item.DropDownItems.Add("快速备份", null, (_, _) => BackupRequested?.Invoke(planId, true));
         item.DropDownItems.Add("慢速备份", null, (_, _) => BackupRequested?.Invoke(planId, false));
         return item;
+    }
+
+    /// <summary>勾上当前档位。配置里的值对不上时勾最接近的一档。</summary>
+    public void SetLimit(int kbps)
+    {
+        var index = SpeedLimits.IndexOf(kbps);
+        for (var i = 0; i < _limitMenu.DropDownItems.Count; i++)
+            if (_limitMenu.DropDownItems[i] is ToolStripMenuItem item)
+                item.Checked = i == index;
     }
 
     /// <summary>托盘悬停文字，最多 127 个字符。</summary>

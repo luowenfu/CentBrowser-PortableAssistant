@@ -1,7 +1,10 @@
 using System.Reflection;
 using System.Windows;
 using System.Windows.Threading;
+using CentBrowser_PortableAssistant.Core.Backup;
+using CentBrowser_PortableAssistant.Core.Browser;
 using CentBrowser_PortableAssistant.Core.Schedule;
+using CentBrowser_PortableAssistant.Core.Settings;
 using CentBrowser_PortableAssistant.Core.Upload;
 using CentBrowser_PortableAssistant.Core.Update;
 using CentBrowser_PortableAssistant.Services;
@@ -91,6 +94,7 @@ public partial class App : Application
         void SyncMenu()
         {
             tray.SetPlans(Services.Config.Plans.Select(p => (p.Id, p.Name)));
+            tray.SetLimit(Services.Config.SlowUploadKbps);
         }
         SyncMenu();
         Services.ConfigChanged += () => Dispatcher.BeginInvoke(() =>
@@ -100,14 +104,14 @@ public partial class App : Application
         });
 
         tray.OpenRequested += ShowMainWindow;
-        tray.RetryRequested += Services.Queue.RetryNow;
         tray.RecordsRequested += ShowRecords;
         tray.ExitRequested += ExitApp;
-        tray.BackupRequested += (id, fast) =>
+        tray.LimitRequested += kbps =>
         {
-            var plans = Services.Config.Plans.Where(p => id is null || p.Id == id).ToList();
-            _ = Backup.RunAsync(plans, foreground: fast);
+            Services.Config.SlowUploadKbps = kbps;
+            Services.SaveConfig();
         };
+        tray.BackupRequested += (id, fast) => _ = BackupFromTray(id, fast);
         tray.Hovering += () =>
         {
             // 鼠标一动就来一次，一秒刷一回就够
@@ -243,12 +247,62 @@ public partial class App : Application
         Refresh();
     }
 
+    /// <summary>托盘里点的备份。一个都备不了时打开主窗口，不启动这次飞行。</summary>
+    private async Task BackupFromTray(string? id, bool fast)
+    {
+        Services.RefreshInstalls();
+        var plans = Services.Config.Plans.Where(p => id is null || p.Id == id).ToList();
+        if (plans.Count == 0) return;
+        (BackupPlan Plan, string Reason)? blocked = null;
+        var ready = false;
+        foreach (var plan in plans)
+        {
+            if (BlockedReason(plan) is { } reason) blocked ??= (plan, reason);
+            else ready = true;
+        }
+        if (!ready && blocked is { } hit)
+        {
+            ShowMainWindow();
+            _window!.ShowPlan(hit.Plan.Id);
+            Status.Note(hit.Reason, error: true);
+            return;
+        }
+
+        // 跑起来之后才出错（打包失败、提取被打断）也把主窗口打开。不改当前方案，免得飞机飞到另一张牌上
+        void OnNotice(string title, string text, bool error)
+        {
+            if (error) Dispatcher.BeginInvoke(new Action(ShowMainWindow));
+        }
+        Backup.Notice += OnNotice;
+        try
+        {
+            await Backup.RunAsync(plans, foreground: fast);
+        }
+        finally
+        {
+            Backup.Notice -= OnNotice;
+        }
+    }
+
+    /// <summary>和主界面点快速备份时拦下的是同一类问题。没有则可以开备。</summary>
+    private static string? BlockedReason(BackupPlan plan)
+    {
+        if (Services.InstallFor(plan) is not { } install)
+            return $"找不到浏览器：「{plan.Name}」在第 1 步手动选择浏览器目录";
+        if (BackupRunner.Validate(plan, Services.Config, install) is { } problem) return problem;
+        if (BrowserProcess.IsRunning(install)) return "Cent Browser 还开着，关掉后再备份";
+        return null;
+    }
+
     private void ShowRecords()
     {
-        var hidden = _window is not { IsVisible: true };
-        ShowMainWindow();
-        _window!.OpenQueue();
-        if (hidden) _window.Hide();
+        // 菜单的 Click 还没结束就开模态窗口，关掉记录时主窗口会跟着收到关闭
+        Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
+        {
+            ShowMainWindow();
+            _window!.OpenQueue();
+            if (!_window.IsVisible) ShowMainWindow();
+        }));
     }
 
     public void ShowMainWindow()

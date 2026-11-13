@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Threading;
 using CentBrowser_PortableAssistant.Views;
 
 namespace CentBrowser_PortableAssistant;
@@ -13,6 +14,7 @@ public partial class MainWindow : Window
     private TargetsPage? _targets;
     private QueuePage? _queue;
     private AboutPage? _about;
+    private bool _holdClose;
 
     public MainWindow()
     {
@@ -78,7 +80,27 @@ public partial class MainWindow : Window
         ToolWindow.ShowPage(this, "目的地设置", _targets ??= new TargetsPage(), 880, 720);
     }
 
-    public void OpenQueue() => ToolWindow.ShowPage(this, "查询记录", _queue ??= new QueuePage(), 1120, 840);
+    public void ShowPlan(string planId) => Plans.ShowPlan(planId);
+
+    public void OpenQueue() => HoldClose(() =>
+        ToolWindow.ShowPage(this, "查询记录", _queue ??= new QueuePage(), 1120, 840));
+
+    /// <summary>
+    /// 查询记录关掉的同时，主窗口有时也会收到关闭。这段时间里忽略这次关闭。
+    /// 标志多留到对话框返回之后，避开随后才送到的那条关闭消息。
+    /// </summary>
+    private void HoldClose(Action open)
+    {
+        _holdClose = true;
+        try
+        {
+            open();
+        }
+        finally
+        {
+            Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() => _holdClose = false));
+        }
+    }
 
     private void OnOpenTargets(object sender, RoutedEventArgs e) => OpenTargets();
 
@@ -99,6 +121,11 @@ public partial class MainWindow : Window
 
     protected override void OnClosing(CancelEventArgs e)
     {
+        if (_holdClose)
+        {
+            e.Cancel = true;
+            return;
+        }
         var app = (App)Application.Current;
         if (app.IsExiting) return;
         Plans.Flush();

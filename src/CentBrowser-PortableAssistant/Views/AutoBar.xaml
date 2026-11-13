@@ -16,13 +16,7 @@
         <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
             <!-- 慢速上传限速。快速和本机文件夹不限，所以不跟着自动备份一起变灰 -->
             <ComboBox x:Name="LimitBox" Width="128" FontSize="12" Margin="0,0,24,0" SelectionChanged="OnLimitChanged" VerticalAlignment="Center"
-                      ToolTip="慢速备份时的上传限速">
-                <ComboBoxItem Content="不限速" />
-                <ComboBoxItem Content="限速 512 KB/s" />
-                <ComboBoxItem Content="限速 1 MB/s" />
-                <ComboBoxItem Content="限速 2 MB/s" />
-                <ComboBoxItem Content="限速 5 MB/s" />
-            </ComboBox>
+                      ToolTip="慢速备份时的上传限速" />
             <CheckBox x:Name="StartSwitch" Style="{StaticResource Switch}" Click="OnStartToggled" VerticalAlignment="Center" />
             <TextBlock Text="开机启动" Margin="8,0,0,0" VerticalAlignment="Center"
                        ToolTip="开机启动，常驻托盘" />

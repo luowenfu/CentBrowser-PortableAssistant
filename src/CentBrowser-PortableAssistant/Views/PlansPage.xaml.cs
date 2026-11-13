@@ -29,6 +29,14 @@ public partial class PlansPage : UserControl
 
     public event Action? TargetsRequested;
 
+    /// <summary>切到这个方案，让行李牌上的错误露出来。</summary>
+    public void ShowPlan(string planId)
+    {
+        if (_tabs.FirstOrDefault(t => t.Id == planId) is not { } tab) return;
+        if (ReferenceEquals(PlanTabs.SelectedItem, tab)) return;
+        PlanTabs.SelectedItem = tab;
+    }
+
     /// <summary>
     /// 整页不限高量过一遍之后，第 5、6 步这一列比最高那一列矮多少。
     /// 窗口按这一列定高度：扩展和用户列表自己能滚动，不该撑高窗口。
