@@ -575,7 +575,7 @@
                         </StackPanel>
                     </StackPanel>
                     <Line Grid.Column="4" Style="{StaticResource Perforation}" />
-                    <StackPanel Grid.Column="5" VerticalAlignment="Center" MaxWidth="515">
+                    <StackPanel Grid.Column="5" VerticalAlignment="Center" MinWidth="450" MaxWidth="515">
                         <TextBlock Text="待打包" Style="{StaticResource TagLabel}" />
                         <ItemsControl ItemsSource="{Binding FileNames}" Margin="0,2,0,0" MaxWidth="515">
                             <ItemsControl.ItemTemplate>
