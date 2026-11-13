@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
+using SharpVectors.Converters;
 using System.Windows.Threading;
 using CentBrowser_PortableAssistant.Views;
 
@@ -34,7 +35,20 @@ public partial class MainWindow : Window
         App.Updates.Changed += SyncUpdateButton;
         SyncUpdateButton();
         TitleBarIcon.Remove(this);
+        CloudIcon.OpacityMask = SvgMask("/Assets/icon-cloud.svg");
+        AboutIcon.OpacityMask = SvgMask("/Assets/icon-about.svg");
         SourceInitialized += (_, _) => FitToScreen();
+    }
+
+    /// <summary>矢量图标只提供形状，颜色跟按钮文字走。</summary>
+    private static Brush SvgMask(string relative)
+    {
+        var uri = new Uri($"pack://application:,,,{relative}", UriKind.Absolute);
+        var box = new SvgViewbox();
+        box.Load(Application.GetResourceStream(uri).Stream, true, false);
+        var brush = new DrawingBrush(box.Drawings) { Stretch = Stretch.Uniform };
+        if (brush.CanFreeze) brush.Freeze();
+        return brush;
     }
 
     /// <summary>
