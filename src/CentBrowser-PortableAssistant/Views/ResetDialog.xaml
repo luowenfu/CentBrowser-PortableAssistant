@@ -15,7 +15,7 @@
             <StackPanel>
                 <TextBlock Text="卸载" />
                 <TextBlock Style="{StaticResource Hint}" Margin="0,2,0,0"
-                           Text="再删掉备份记录和本机上释放的工具文件，然后退出。之后删掉本程序就行" />
+                           Text="重置+删掉备份记录、工具，然后退出" />
             </StackPanel>
         </RadioButton>
         <TextBlock Style="{StaticResource Hint}" Margin="0,20,0,0" Text="目的地里已有的备份不会被删除" />
