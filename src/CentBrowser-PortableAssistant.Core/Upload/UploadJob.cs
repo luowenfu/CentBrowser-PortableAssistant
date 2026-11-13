@@ -22,6 +22,9 @@ public sealed class UploadJob
     /// <summary>打包时选中的目的地。上传过程中不会删，用来判断还在的目的地是否都送到了。</summary>
     public List<string> TargetIds { get; set; } = [];
 
+    /// <summary>和 <see cref="TargetIds"/> 对齐，打包时的目的地名。目的地后来删了，记录里仍用这个名字。</summary>
+    public List<string> TargetNames { get; set; } = [];
+
     /// <summary>这次打包时的数据指纹。上传全部送达后再写入正式记录。旧队列里的任务没有这份，传完时不要覆盖。</summary>
     public string Fingerprint { get; set; } = "";
 

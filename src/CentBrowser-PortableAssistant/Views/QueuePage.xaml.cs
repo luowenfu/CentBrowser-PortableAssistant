@@ -82,7 +82,7 @@ public partial class QueuePage : UserControl
         Jobs.ItemsSource = jobs.Select(j =>
         {
             var pending = j.PendingTargetIds.Select(id => config.Targets.FirstOrDefault(t => t.Id == id)).ToList();
-            var names = pending.Select(PendingName).ToList();
+            var names = j.PendingTargetIds.Select(id => DestinationLabel(config, j, id)).Where(n => n.Length > 0).ToList();
             var active = _progress is { } p && p.Job.Id == j.Id && App.Services.Queue.IsBusy;
             var percent = active && _progress!.Total > 0 ? _progress.Sent * 100.0 / _progress.Total : 0;
             var failed = !active && j.LastError.Length > 0;
@@ -264,7 +264,9 @@ public partial class QueuePage : UserControl
             foreach (var id in job.PendingTargetIds)
             {
                 if (config.Targets.FirstOrDefault(t => t.Id == id) is { Disabled: true }) continue;
-                if (LiveName(config, id) is not { } name) continue;
+                var name = LiveName(config, id);
+                if (string.IsNullOrEmpty(name)) name = RememberedTarget(job, id);
+                if (string.IsNullOrEmpty(name)) continue;
                 pending.Add(id);
                 lines.Add(failed
                     ? WhereLine.Of($"{job.NextAttemptUtc.ToLocalTime():HH:mm} 重试「{name}」", true)
@@ -292,15 +294,20 @@ public partial class QueuePage : UserControl
 
     private static string Quote(IEnumerable<string> names) => string.Concat(names.Select(n => $"「{n}」"));
 
-    private static string PendingName(UploadTarget? target) => target switch
+    /// <summary>目的地还在就用现在的名字。删了用打包时记下的，不加已删除。</summary>
+    private static string DestinationLabel(AppConfig config, UploadJob job, string id)
     {
-        null => "已删除的目的地",
-        { Disabled: true } => $"{target.Name}（已停用）",
-        _ => target.Name,
-    };
+        var target = config.Targets.FirstOrDefault(t => t.Id == id);
+        if (target is { Disabled: true }) return $"{target.Name}（已停用）";
+        if (target is not null) return target.Name;
+        return RememberedTarget(job, id);
+    }
 
-    private static string TargetName(AppConfig config, string id) =>
-        config.Targets.FirstOrDefault(t => t.Id == id)?.Name ?? "已删除的目的地";
+    private static string RememberedTarget(UploadJob job, string id)
+    {
+        var index = job.TargetIds.IndexOf(id);
+        return index >= 0 && index < job.TargetNames.Count ? job.TargetNames[index] : "";
+    }
 
     /// <summary>失败记录里写的是当时的目的地名。改名之后换成现在的名字。</summary>
     private static string CurrentError(string error, string? name)

@@ -103,6 +103,7 @@ public sealed class BackupRunner(HistoryStore history, UploadQueue queue)
                 Size = new FileInfo(f).Length,
                 PendingTargetIds = [.. targetIds],
                 TargetIds = [.. targetIds],
+                TargetNames = targetIds.Select(id => config.Targets.First(t => t.Id == id).Name).ToList(),
                 Fingerprint = fingerprint,
                 FromAuto = fromAuto,
                 Slow = lowPriority,

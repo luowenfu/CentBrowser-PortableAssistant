@@ -38,10 +38,10 @@ public class RecordPlanNameTests
         Assert.Equal("工作", RecordPlanName.Show("工作", "旧名字"));
 
     [Fact]
-    public void DeletedPlanKeepsTheNameFromThatTime() =>
-        Assert.Equal("工作（已删除）", RecordPlanName.Show(null, "工作"));
+    public void GonePlanKeepsTheNameFromThatTime() =>
+        Assert.Equal("工作", RecordPlanName.Show(null, "工作"));
 
     [Fact]
-    public void DeletedPlanWithoutASavedNameSaysSo() =>
-        Assert.Equal("已删除的方案", RecordPlanName.Show(null, ""));
+    public void GonePlanWithoutASavedNameStaysBlank() =>
+        Assert.Equal("", RecordPlanName.Show(null, ""));
 }
