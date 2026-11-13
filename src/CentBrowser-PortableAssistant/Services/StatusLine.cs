@@ -93,7 +93,9 @@ public sealed class StatusLine
         var retrying = queued && _app.Queue.HasRetryPending();
         var text = status.Stage switch
         {
-            BackupStage.Collecting => Pace(_backup.Slow, $"正在提取「{status.PlanName}」"),
+            BackupStage.Collecting => Pace(_backup.Slow, status.Percent < 0
+                ? $"正在提取「{status.PlanName}」"
+                : $"正在提取「{status.PlanName}」{status.Percent}%"),
             BackupStage.Packing => Pace(_backup.Slow, $"正在打包「{status.PlanName}」{status.Percent}%"),
             _ when !retrying => Pace(_backup.Slow, $"「{status.PlanName}」已放进上传队列"),
             _ => null,

@@ -229,6 +229,72 @@ public sealed class CollectAndPackTests : IDisposable
         await Assert.ThrowsAsync<ArgumentException>(() =>
             Packer.PackAsync(_staging, _staging + "-out", "t", ArchiveFormats.Zip, ZipEncryption.Aes256, "中文", null, CancellationToken.None));
 
+    [Fact]
+    public void CollectPercentIgnoresLockAndCountsJson()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "cbpa-pct-" + Guid.NewGuid().ToString("N")[..8]);
+        try
+        {
+            var dir = Path.Combine(root, "data");
+            Directory.CreateDirectory(dir);
+            File.WriteAllBytes(Path.Combine(dir, "keep.bin"), new byte[1000]);
+            File.WriteAllBytes(Path.Combine(dir, "LOCK"), new byte[9000]);
+            var json = Path.Combine(root, "Local State");
+            File.WriteAllText(json, "{}");
+            var jsonLen = new FileInfo(json).Length;
+            var bin = Path.Combine(root, "note.bin");
+            File.WriteAllBytes(bin, new byte[jsonLen]);
+
+            var seen = new List<int>();
+            var copied = Collector.Collect(_browser.Install, new BackupPlan(), [], [
+                new CollectItem(dir, "data", CollectKind.Copy),
+            ], Path.Combine(root, "stage"), CancellationToken.None, new InlineProgress(seen));
+            Assert.Equal(1000, copied);
+            Assert.Equal([0, 100], seen);
+
+            seen.Clear();
+            copied = Collector.Collect(_browser.Install, new BackupPlan(), [], [
+                new CollectItem(bin, "note.bin", CollectKind.Copy),
+                new CollectItem(json, "User Data/Local State", CollectKind.LocalState),
+            ], Path.Combine(root, "stage2"), CancellationToken.None, new InlineProgress(seen));
+            Assert.Equal(jsonLen, copied);
+            Assert.Equal([0, 50, 100], seen);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void CollectPercentMovesWhileCopyingALargeFile()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "cbpa-big-" + Guid.NewGuid().ToString("N")[..8]);
+        try
+        {
+            var bin = Path.Combine(root, "big.bin");
+            Directory.CreateDirectory(root);
+            File.WriteAllBytes(bin, new byte[1024 * 1024 + 1]);
+            var seen = new List<int>();
+            Collector.Collect(_browser.Install, new BackupPlan(), [], [
+                new CollectItem(bin, "big.bin", CollectKind.Copy),
+            ], Path.Combine(root, "stage"), CancellationToken.None, new InlineProgress(seen));
+            Assert.Equal(0, seen[0]);
+            Assert.Equal(100, seen[^1]);
+            Assert.True(seen.Count >= 3);
+            Assert.True(seen.Zip(seen.Skip(1), (a, b) => b > a).All(x => x));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    private sealed class InlineProgress(List<int> seen) : IProgress<int>
+    {
+        public void Report(int value) => seen.Add(value);
+    }
+
     public void Dispose()
     {
         _browser.Dispose();

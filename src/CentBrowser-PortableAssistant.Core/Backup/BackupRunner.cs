@@ -75,9 +75,12 @@ public sealed class BackupRunner(HistoryStore history, UploadQueue queue)
                 plan.NamePrefix, plan.Name, plan.Slug, DateTime.Now, plan.IncludeProgram, install.Version, Environment.MachineName),
                 plan.AsciiFileName);
 
-            // 包里套一层和包同名的文件夹，解压出来就是这个文件夹
-            progress?.Report(new BackupStatus(plan.Name, BackupStage.Collecting, 0));
-            var collected = await CollectAsync(install, plan, profiles, items, Path.Combine(staging, baseName), ct, browserStarted);
+            // 包里套一层和包同名的文件夹，解压出来就是这个文件夹。
+            // 负数表示还在统计大小，界面先不写百分比
+            progress?.Report(new BackupStatus(plan.Name, BackupStage.Collecting, -1));
+            var collectProgress = progress is null ? null
+                : new Progress<int>(p => progress.Report(new BackupStatus(plan.Name, BackupStage.Collecting, p)));
+            var collected = await CollectAsync(install, plan, profiles, items, Path.Combine(staging, baseName), ct, browserStarted, collectProgress);
             var packProgress = new Progress<int>(p => progress?.Report(new BackupStatus(plan.Name, BackupStage.Packing, p)));
             var files = await Packer.PackAsync(staging, outputDir, baseName, plan.Formats, plan.ZipEncryption,
                 SecretProtector.Unprotect(plan.PasswordProtected), packProgress, ct, lowPriority);
@@ -125,13 +128,14 @@ public sealed class BackupRunner(HistoryStore history, UploadQueue queue)
         IReadOnlyList<CollectItem> items,
         string stagingRoot,
         CancellationToken ct,
-        CancellationToken browserStarted)
+        CancellationToken browserStarted,
+        IProgress<int>? progress)
     {
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(ct, browserStarted);
         long collected;
         try
         {
-            collected = await Task.Run(() => Collector.Collect(install, plan, profiles, items, stagingRoot, linked.Token), linked.Token);
+            collected = await Task.Run(() => Collector.Collect(install, plan, profiles, items, stagingRoot, linked.Token, progress), linked.Token);
         }
         catch (OperationCanceledException) when (!ct.IsCancellationRequested)
         {
