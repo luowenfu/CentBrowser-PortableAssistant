@@ -9,11 +9,11 @@
         <TextBlock Text="{Binding BrowserLabel}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
         <TextBlock Text="{Binding BrowserPath}" FontFamily="{StaticResource MonoFont}" FontSize="12" Foreground="{StaticResource Text2}"
                    TextWrapping="Wrap" Margin="0,4,0,0" />
-        <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-            <Button Content="选择目录…" Click="OnPick" ToolTip="选 chrome.exe 所在的目录" />
-            <Button Style="{StaticResource QuietButton}" Content="改回自动识别" Margin="8,0,0,0" Click="OnAutoDetect"
+        <DockPanel Margin="0,12,0,0" LastChildFill="False">
+            <Button DockPanel.Dock="Right" Content="选择目录…" Click="OnPick" ToolTip="选 chrome.exe 所在的目录" />
+            <Button DockPanel.Dock="Right" Style="{StaticResource QuietButton}" Content="改回自动识别" Margin="0,0,8,0" Click="OnAutoDetect"
                     Visibility="{Binding IsManualBrowser, Converter={StaticResource Vis}}" />
-        </StackPanel>
+        </DockPanel>
     </StackPanel>
     <UserControl.Style>
         <Style TargetType="UserControl">

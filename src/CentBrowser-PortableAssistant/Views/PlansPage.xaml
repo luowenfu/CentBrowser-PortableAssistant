@@ -175,7 +175,7 @@
         <!-- 五步 -->
         <Grid Grid.Row="1" x:Name="Body">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="272" />
+                <ColumnDefinition Width="312" />
                 <ColumnDefinition Width="12" />
                 <ColumnDefinition Width="*" MinWidth="480" />
                 <ColumnDefinition Width="12" />
