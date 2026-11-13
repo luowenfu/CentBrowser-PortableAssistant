@@ -24,7 +24,13 @@ public partial class AboutPage : UserControl
     private void OnOpenPending(object sender, RoutedEventArgs e) => OpenFolder(AppPaths.PendingDir);
 
     private void OnOpenGitHub(object sender, RoutedEventArgs e) =>
-        Process.Start(new ProcessStartInfo("https://github.com/luowenfu/CentBrowser-PortableAssistant") { UseShellExecute = true });
+        OpenSite("https://github.com/luowenfu/CentBrowser-PortableAssistant");
+
+    private void OnOpenGitee(object sender, RoutedEventArgs e) =>
+        OpenSite("https://gitee.com/dfsss/CentBrowser-PortableAssistant");
+
+    private static void OpenSite(string url) =>
+        Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
 
     private void OnOpenLicense(object sender, RoutedEventArgs e)
     {
