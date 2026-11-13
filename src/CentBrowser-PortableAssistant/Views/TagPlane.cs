@@ -5,7 +5,6 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using System.Windows.Threading;
 using CentBrowser_PortableAssistant.Core.Backup;
 
 namespace CentBrowser_PortableAssistant.Views;
@@ -23,16 +22,22 @@ public sealed class TagPlane
     private readonly TextBlock _size;
     private readonly List<(DependencyObject Target, DependencyProperty Property, BindingBase Binding)> _held = [];
     private readonly Action _arrived;
-    private readonly DispatcherTimer _pace;
     private DateTime? _destinationStart;
     private double _realUnit;
+    private double _shownUnit;
+    private double _fromUnit;
+    private double _trackTo = -1;
+    private DateTime _glideFrom;
+    private double _glideSeconds;
     private bool _awaitingEnd;
-    private bool _coasting;
-    private int _coast;
+    private bool _rendering;
     private bool _shown;
 
     /// <summary>目的地这一段再快也要飞满这么久。本地文件夹常常一秒就复制完。</summary>
     private const double DestinationSeconds = 2;
+
+    /// <summary>进度大约一秒才来一次。把这一跳摊开飞，避免一顿一顿。</summary>
+    private const double SampleSeconds = 1;
 
     public TagPlane(
         Grid grid, Canvas layer, Image plane,
@@ -50,12 +55,9 @@ public sealed class TagPlane
         _size = size;
         _arrived = arrived;
         Holds = [planName, packedSize, files, destination, destinationText, problem, pack];
-        _pace = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(16) };
-        _pace.Tick += (_, _) => OnPace();
         grid.SizeChanged += (_, _) =>
         {
-            if (_coasting || (_destinationStart is not null && _realUnit >= 1)) BeginCoast();
-            else if (_destinationStart is not null) DrawDestination();
+            if (_destinationStart is not null) Move(0.70 + 0.30 * _shownUnit, animate: false);
             else Place(App.Status.Flight, animate: false);
         };
     }
@@ -86,7 +88,7 @@ public sealed class TagPlane
             {
                 _realUnit = 1;
                 _awaitingEnd = true;
-                if (!_coasting) BeginCoast();
+                StartGlide();
                 return;
             }
             Thaw();
@@ -98,17 +100,11 @@ public sealed class TagPlane
             Place(progress, animate: true);
             return;
         }
+        var entered = _destinationStart is null;
         _destinationStart ??= DateTime.UtcNow;
+        if (entered) _shownUnit = 0;
         _realUnit = Math.Clamp((progress - 0.70) / 0.30, 0, 1);
-        if (_coasting) return;
-        if (_realUnit >= 1)
-        {
-            BeginCoast();
-            return;
-        }
-        DrawDestination();
-        if (VisualUnit() + 1e-4 < _realUnit) StartPace();
-        else StopPace();
+        StartGlide();
     }
 
     private void Hold()
@@ -153,68 +149,44 @@ public sealed class TagPlane
         Frozen = false;
     }
 
-    /// <summary>真实进度和已用时间里取更慢的那个。时间按整段两秒匀速。</summary>
-    private double VisualUnit()
+    private void StartGlide()
     {
-        if (_destinationStart is not { } start) return 0;
-        var paced = (DateTime.UtcNow - start).TotalSeconds / DestinationSeconds;
-        return Math.Min(_realUnit, paced);
+        if (_rendering) return;
+        _rendering = true;
+        CompositionTarget.Rendering += OnGlide;
     }
 
-    private void OnPace()
+    private void StopGlide()
     {
-        if (_coasting || _destinationStart is null)
-        {
-            StopPace();
-            return;
-        }
-        if (_realUnit >= 1)
-        {
-            BeginCoast();
-            return;
-        }
-        DrawDestination();
-        if (VisualUnit() + 1e-4 >= _realUnit) StopPace();
+        if (!_rendering) return;
+        _rendering = false;
+        CompositionTarget.Rendering -= OnGlide;
     }
 
-    /// <summary>进度已经到头时，用剩下的时间匀速滑到终点。不满两秒就补满。</summary>
-    private void BeginCoast()
+    /// <summary>按帧往前飞。新进度摊到大约一秒里，整段再快也不少于两秒。</summary>
+    private void OnGlide(object? sender, EventArgs e)
     {
-        if (_destinationStart is not { } start) return;
-        var imageWidth = ImageWidth();
-        if (imageWidth <= 0 || !TryBounds(out var x0, out var x1, out var x2, out var x3)) return;
-        StopPace();
-        var remain = DestinationSeconds - (DateTime.UtcNow - start).TotalSeconds;
-        var id = ++_coast;
-        if (remain <= 0.03)
+        if (_destinationStart is not { } start)
         {
-            _coasting = false;
-            Move(1, animate: false);
-            if (_awaitingEnd) Thaw();
+            StopGlide();
             return;
         }
-        var shown = 0.70 + 0.30 * VisualUnit();
-        var from = ImageLeft(shown, x0, x1, x2, x3, imageWidth);
-        Move(shown, animate: false);
-        _coasting = true;
-        var animation = new DoubleAnimation(from, x3, TimeSpan.FromSeconds(remain))
+        var goal = Math.Clamp(_realUnit, 0, 1);
+        if (Math.Abs(goal - _trackTo) > 1e-4)
         {
-            FillBehavior = FillBehavior.HoldEnd,
-        };
-        animation.Completed += (_, _) =>
-        {
-            if (id != _coast) return;
-            _coasting = false;
-            if (_awaitingEnd) Thaw();
-        };
-        _plane.BeginAnimation(Canvas.LeftProperty, animation);
-    }
-
-    private void DrawDestination()
-    {
-        if (_destinationStart is null) return;
-        var shown = 0.70 + 0.30 * VisualUnit();
-        Move(shown, animate: false);
+            _fromUnit = _shownUnit;
+            _trackTo = goal;
+            _glideFrom = DateTime.UtcNow;
+            var elapsed = (_glideFrom - start).TotalSeconds;
+            var span = Math.Max(0, goal - _fromUnit);
+            _glideSeconds = goal >= 1
+                ? Math.Max(DestinationSeconds - elapsed, 0.35)
+                : Math.Max(SampleSeconds, span * DestinationSeconds);
+        }
+        var t = _glideSeconds <= 0 ? 1 : (DateTime.UtcNow - _glideFrom).TotalSeconds / _glideSeconds;
+        _shownUnit = t >= 1 ? _trackTo : _fromUnit + (_trackTo - _fromUnit) * t;
+        Move(0.70 + 0.30 * _shownUnit, animate: false);
+        if (_awaitingEnd && _shownUnit >= 0.999) Thaw();
     }
 
     private void Place(double? progress, bool animate)
@@ -232,8 +204,9 @@ public sealed class TagPlane
         var imageWidth = ImageWidth();
         if (imageWidth <= 0 || !TryBounds(out var x0, out var x1, out var x2, out var x3)) return;
         var left = ImageLeft(progress, x0, x1, x2, x3, imageWidth);
-        _layer.Clip = new RectangleGeometry(new Rect(x0, 0, x3 - x0, Math.Max(_layer.ActualHeight, _grid.ActualHeight)));
-        Canvas.SetTop(_plane, Math.Max(0, (_grid.ActualHeight - _plane.Height) / 2));
+        var top = PlaneTop();
+        _layer.Clip = new RectangleGeometry(new Rect(x0, top - 8, x3 - x0, Math.Max(_layer.ActualHeight, _grid.ActualHeight) - top + _plane.Height + 16));
+        Canvas.SetTop(_plane, top);
         _plane.Visibility = Visibility.Visible;
         if (!animate || !_shown)
         {
@@ -248,23 +221,21 @@ public sealed class TagPlane
         });
     }
 
-    private void StartPace()
+    /// <summary>贴近行李牌上沿，留出一点缝。</summary>
+    private double PlaneTop()
     {
-        if (!_pace.IsEnabled) _pace.Start();
-    }
-
-    private void StopPace()
-    {
-        if (_pace.IsEnabled) _pace.Stop();
+        var pad = _grid.Parent is Border border ? border.Padding.Top : 0;
+        return 3 - pad;
     }
 
     private void ClearDestination()
     {
-        _coast++;
-        _coasting = false;
-        StopPace();
+        StopGlide();
         _destinationStart = null;
         _realUnit = 0;
+        _shownUnit = 0;
+        _fromUnit = 0;
+        _trackTo = -1;
         _awaitingEnd = false;
     }
 
