@@ -58,9 +58,9 @@ public sealed class TrayIcon : IDisposable
 
         var menu = new ContextMenuStrip { ShowImageMargin = true };
         menu.Items.Add("打开主界面", null, (_, _) => OpenRequested?.Invoke());
+        menu.Items.Add("查询记录", null, (_, _) => RecordsRequested?.Invoke());
         menu.Items.Add(_limitMenu);
         menu.Items.Add(_backupMenu);
-        menu.Items.Add("查询记录", null, (_, _) => RecordsRequested?.Invoke());
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add("退出", null, (_, _) => ExitRequested?.Invoke());
         _icon.ContextMenuStrip = menu;

@@ -545,14 +545,24 @@
 
         <!-- 行李牌：这次会打出什么 -->
         <Grid Grid.Row="2" Margin="0,12,0,0">
-            <Grid.Effect>
-                <DropShadowEffect BlurRadius="12" ShadowDepth="1" Direction="270" Opacity="0.10" Color="#000000" />
-            </Grid.Effect>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="28" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <Path Data="M1,0 L1,1 L0,0.72 L0,0.28 Z" Stretch="Fill" Fill="{StaticResource Tag}" />
+            <!-- 阴影只挂在牌的外形上。挂在整张牌上时，圆角按钮四角会按透明底抗锯齿，看起来脏 -->
+            <Grid IsHitTestVisible="False">
+                <Grid.Effect>
+                    <DropShadowEffect BlurRadius="12" ShadowDepth="1" Direction="270" Opacity="0.10" Color="#000000" />
+                </Grid.Effect>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="28" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Path Data="M1,0 L1,1 L0,0.72 L0,0.28 Z" Stretch="Fill" Fill="{StaticResource Tag}" />
+                <Border Grid.Column="1" Background="{StaticResource Tag}" CornerRadius="0,12,12,0" />
+            </Grid>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="28" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+            <Path Data="M1,0 L1,1 L0,0.72 L0,0.28 Z" Stretch="Fill" Fill="{StaticResource Tag}" IsHitTestVisible="False" />
             <Border Grid.Column="1" Background="{StaticResource Tag}" CornerRadius="0,12,12,0" Padding="0,14,20,14">
                 <Grid x:Name="TagGrid">
                     <Grid.ColumnDefinitions>
@@ -652,6 +662,7 @@
                     </Canvas>
                 </Grid>
             </Border>
+            </Grid>
         </Grid>
     </Grid>
 </UserControl>
