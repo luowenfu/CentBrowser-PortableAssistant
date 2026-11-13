@@ -544,25 +544,30 @@
             </Grid.ColumnDefinitions>
             <Path Data="M1,0 L1,1 L0,0.72 L0,0.28 Z" Stretch="Fill" Fill="{StaticResource Tag}" />
             <Border Grid.Column="1" Background="{StaticResource Tag}" CornerRadius="0,12,12,0" Padding="0,14,20,14">
-                <Grid>
+                <Grid x:Name="TagGrid">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" MinWidth="120" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="4*" MinWidth="400" />
                         <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="3*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
+                    <!-- 飞机在文字下面。铺满整牌，飞出起终点的部分另做裁切 -->
+                    <Canvas x:Name="PlaneLayer" Grid.ColumnSpan="9" IsHitTestVisible="False">
+                        <Image x:Name="Plane" Height="32" Source="pack://application:,,,/Assets/plane.png"
+                               RenderOptions.BitmapScalingMode="HighQuality" Visibility="Collapsed" IsHitTestVisible="False" />
+                    </Canvas>
                     <Ellipse Width="14" Height="14" Fill="{StaticResource Bg}" Stroke="{StaticResource AccentHover}" VerticalAlignment="Center" Margin="0,0,16,0" />
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                         <TextBlock Text="方案" Style="{StaticResource TagLabel}" />
-                        <TextBlock Text="{Binding Name}" FontSize="18" Foreground="{StaticResource Text}" TextTrimming="CharacterEllipsis" MaxWidth="200"
+                        <TextBlock x:Name="PlanNameText" Text="{Binding Name}" FontSize="18" Foreground="{StaticResource Text}" TextTrimming="CharacterEllipsis" MaxWidth="200"
                                    ToolTip="{Binding Name}" />
                     </StackPanel>
-                    <Line Grid.Column="2" Style="{StaticResource Perforation}" />
+                    <Line x:Name="StartLine" Grid.Column="2" Style="{StaticResource Perforation}" />
                     <!-- 两个大小并排，共用一段 -->
                     <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
                         <StackPanel>
@@ -571,13 +576,13 @@
                         </StackPanel>
                         <StackPanel Margin="20,0,0,0" ToolTip="按当前打包格式和上次备份的压缩比估算">
                             <TextBlock Text="提取后" Style="{StaticResource TagLabel}" />
-                            <TextBlock Text="{Binding PackedSize}" FontWeight="Normal" Foreground="{StaticResource Text}" Margin="0,3,0,0" />
+                            <TextBlock x:Name="PackedSizeText" Text="{Binding PackedSize}" FontWeight="Normal" Foreground="{StaticResource Text}" Margin="0,3,0,0" />
                         </StackPanel>
                     </StackPanel>
-                    <Line Grid.Column="4" Style="{StaticResource Perforation}" />
-                    <StackPanel Grid.Column="5" VerticalAlignment="Center" MinWidth="400" MaxWidth="515">
+                    <Line x:Name="ExtractLine" Grid.Column="4" Style="{StaticResource Perforation}" />
+                    <StackPanel Grid.Column="5" VerticalAlignment="Center">
                         <TextBlock Text="待打包" Style="{StaticResource TagLabel}" />
-                        <ItemsControl ItemsSource="{Binding FileNames}" Margin="0,2,0,0" MaxWidth="515">
+                        <ItemsControl x:Name="FileList" ItemsSource="{Binding FileNames}" Margin="0,2,0,0">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <!-- 短名字时大小紧跟文件名；放不下时名字省略，大小留在可见区域里 -->
@@ -599,17 +604,17 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </StackPanel>
-                    <Line Grid.Column="6" Style="{StaticResource Perforation}"
+                    <Line x:Name="PackLine" Grid.Column="6" Style="{StaticResource Perforation}"
                           Visibility="{Binding ShowDestination, Converter={StaticResource Vis}}" />
-                    <!-- 这一列吃掉剩余宽度。Stretch 再加最大宽度会居中，左侧间距就对不齐 -->
-                    <StackPanel Grid.Column="7" VerticalAlignment="Center" HorizontalAlignment="Left" MaxWidth="160"
+                    <!-- 这一列和待打包按 3:4 分剩余宽度。名字仍最多 160，避免被拉得满列都是 -->
+                    <StackPanel x:Name="DestinationPanel" Grid.Column="7" VerticalAlignment="Center" HorizontalAlignment="Left" MaxWidth="160"
                                 Visibility="{Binding ShowDestination, Converter={StaticResource Vis}}">
                         <TextBlock Text="目的地" Style="{StaticResource TagLabel}" />
-                        <TextBlock Text="{Binding Destinations}" Foreground="{StaticResource Text}" Margin="0,3,0,0" TextTrimming="CharacterEllipsis"
+                        <TextBlock x:Name="DestinationText" Text="{Binding Destinations}" Foreground="{StaticResource Text}" Margin="0,3,0,0" TextTrimming="CharacterEllipsis"
                                    ToolTip="{Binding DestinationsDetail}" />
                     </StackPanel>
                     <StackPanel Grid.Column="8" Orientation="Horizontal" VerticalAlignment="Center" Margin="64,0,0,0">
-                        <TextBlock Text="{Binding Problem}" Style="{StaticResource TagMessage}" Foreground="{StaticResource Danger}"
+                        <TextBlock x:Name="ProblemText" Text="{Binding Problem}" Style="{StaticResource TagMessage}" Foreground="{StaticResource Danger}"
                                    MaxWidth="220" Margin="0,0,16,0" />
                         <Button x:Name="BackupButton" Style="{StaticResource PrimaryButton}" Content="快速备份" Height="36" Padding="24,0"
                                 VerticalAlignment="Center" Click="OnBackupNow" />

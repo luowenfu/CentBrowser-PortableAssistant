@@ -18,10 +18,13 @@ public class FlightProgressTests
     }
 
     [Fact]
-    public void NoseEntersAtTheStartAndThePackageLeavesAtTheEnd()
+    public void NoseSitsOnTheDividerForEachStage()
     {
-        Assert.Equal(-40, FlightProgress.Left(0, 200, 40));
-        Assert.Equal(200, FlightProgress.Left(1, 200, 40));
+        Assert.Equal(10, FlightProgress.Nose(0, 10, 40, 90, 130));
+        Assert.Equal(25, FlightProgress.Nose(0.10, 10, 40, 90, 130));
+        Assert.Equal(40, FlightProgress.Nose(0.20, 10, 40, 90, 130));
+        Assert.Equal(90, FlightProgress.Nose(0.70, 10, 40, 90, 130));
+        Assert.Equal(130, FlightProgress.Nose(1, 10, 40, 90, 130));
     }
 
     [Fact]

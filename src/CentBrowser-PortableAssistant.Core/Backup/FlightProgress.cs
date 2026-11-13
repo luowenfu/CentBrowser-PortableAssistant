@@ -20,10 +20,17 @@ public static class FlightProgress
         return 0.70 + 0.30 * unit;
     }
 
-    /// <summary>图片左缘。0 时机头刚到起点，1 时左缘刚离开终点。</summary>
-    public static double Left(double progress, double track, double image)
+    /// <summary>
+    /// 机头位置。0–0.20 在提取两条线之间，0.20–0.70 在打包两条线之间，0.70–1 在目的地左线和终点之间。
+    /// 这些数只标出哪一段，线段本身的像素长短另算。
+    /// </summary>
+    public static double Nose(double progress, double extractStart, double extractEnd, double packEnd, double uploadEnd)
     {
         var unit = double.IsFinite(progress) ? Math.Clamp(progress, 0d, 1d) : 0d;
-        return -image + unit * (track + image);
+        if (unit <= 0.20) return Between(extractStart, extractEnd, unit / 0.20);
+        if (unit <= 0.70) return Between(extractEnd, packEnd, (unit - 0.20) / 0.50);
+        return Between(packEnd, uploadEnd, (unit - 0.70) / 0.30);
     }
+
+    private static double Between(double start, double end, double unit) => start + (end - start) * unit;
 }

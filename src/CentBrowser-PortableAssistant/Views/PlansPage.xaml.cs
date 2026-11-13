@@ -25,6 +25,7 @@ public partial class PlansPage : UserControl
     private string _nameBeforeRename = "";
     private bool _selfSave;
     private int _sizeRequest;
+    private readonly TagPlane _tag;
 
     public event Action? TargetsRequested;
 
@@ -63,6 +64,8 @@ public partial class PlansPage : UserControl
     public PlansPage()
     {
         InitializeComponent();
+        _tag = new TagPlane(TagGrid, PlaneLayer, Plane, StartLine, ExtractLine, PackLine, BackupButton, SizeText,
+            PlanNameText, PackedSizeText, FileList, DestinationPanel, DestinationText, ProblemText);
         foreach (var v in NameTemplate.Variables)
         {
             var key = new Button { Content = v, Style = (Style)FindResource("Keycap") };
@@ -79,9 +82,15 @@ public partial class PlansPage : UserControl
 
         App.Backup.Notice += (title, _, _) => Dispatcher.BeginInvoke(() =>
         {
-            if (title == "开始备份") _editor?.RefreshFileNames();
+            if (title != "开始备份") return;
+            _tag.Retake(() => _editor?.RefreshFileNames(), _editor?.RawSize is long size ? Format.Size(size) : null);
         });
-        App.Backup.BusyChanged += () => Dispatcher.BeginInvoke(() => BackupButton.IsEnabled = !App.Backup.IsBusy);
+        App.Status.Changed += () => Dispatcher.BeginInvoke(() =>
+        {
+            if (_tag.OnStatus()) _ = EstimateSizeAsync();
+            UpdateBackupButton();
+        });
+        App.Backup.BusyChanged += () => Dispatcher.BeginInvoke(UpdateBackupButton);
         App.Services.ConfigChanged += () =>
         {
             if (!_selfSave) Dispatcher.BeginInvoke(OnConfigChanged);
@@ -391,25 +400,29 @@ public partial class PlansPage : UserControl
         LoadPlans(null);
     }
 
-    /// <summary>按当前勾选估算未提取大小，后台算，只保留最后一次请求的结果。</summary>
+    /// <summary>飞行中按钮保持不可按。上传阶段提取和打包已经结束，单看 IsBusy 会把它放开。</summary>
+    private void UpdateBackupButton() =>
+        BackupButton.IsEnabled = !App.Backup.IsBusy && App.Status.Flight is null;
+
+    /// <summary>按当前勾选估算未提取大小，后台算，只保留最后一次请求的结果。飞行中不改牌上的字。</summary>
     private async Task EstimateSizeAsync()
     {
         var editor = _editor;
         if (editor?.Install is not { } install)
         {
-            SizeText.Text = "—";
+            if (!_tag.Frozen) SizeText.Text = "—";
             return;
         }
         var request = ++_sizeRequest;
         var plan = editor.ToPlan();
-        SizeText.Text = "…";
+        if (!_tag.Frozen) SizeText.Text = "…";
         var size = await Task.Run(() =>
         {
             var profiles = CollectPlanner.SelectedProfiles(install, plan);
             return CollectPlanner.Plan(install, plan, profiles).Sum(i => ProfilePaths.SizeOf(i.Source));
         });
         if (request != _sizeRequest) return;
-        SizeText.Text = Format.Size(size);
         editor.RawSize = size;
+        if (!_tag.Frozen) SizeText.Text = Format.Size(size);
     }
 }
