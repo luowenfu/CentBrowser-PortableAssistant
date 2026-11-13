@@ -12,18 +12,26 @@ public partial class ToolWindow : Window
         TitleBarIcon.Remove(this);
     }
 
-    public static void ShowPage(Window owner, string title, UserControl page, double width, double height)
+    public static void ShowPage(Window owner, string title, UserControl page, double width, double height, bool fitContent = false)
     {
         var window = new ToolWindow
         {
             Owner = owner,
             Title = title,
             Width = width,
-            Height = height,
-            MinWidth = width * 0.8,
-            MinHeight = height * 0.7,
             Content = page,
         };
+        if (fitContent)
+        {
+            window.SizeToContent = SizeToContent.Height;
+            window.ResizeMode = ResizeMode.NoResize;
+        }
+        else
+        {
+            window.Height = height;
+            window.MinWidth = width * 0.8;
+            window.MinHeight = height * 0.7;
+        }
         window.Closed += (_, _) => window.Content = null;
         window.PreviewKeyDown += (_, e) =>
         {

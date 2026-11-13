@@ -85,7 +85,7 @@ public partial class MainWindow : Window
     private void OnOpenAbout(object sender, RoutedEventArgs e)
     {
         Plans.Flush();
-        ToolWindow.ShowPage(this, "关于", _about ??= new AboutPage(), 680, 620);
+        ToolWindow.ShowPage(this, "关于", _about ??= new AboutPage(), 680, 620, fitContent: true);
     }
 
     private void OnOpenUpdate(object sender, RoutedEventArgs e)

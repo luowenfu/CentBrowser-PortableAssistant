@@ -47,12 +47,11 @@
     </UserControl.Resources>
     <Grid Margin="32,24,32,24">
         <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <StackPanel>
+        <StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <Image Source="pack://application:,,,/Assets/app.png" Width="64" Height="64" RenderOptions.BitmapScalingMode="HighQuality" />
                     <StackPanel Margin="16,0,0,0" VerticalAlignment="Center">
@@ -109,7 +108,6 @@
                 </StackPanel>
                 </StackPanel>
             </StackPanel>
-        </ScrollViewer>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
             <Button x:Name="CoffeeButton" Content="请作者喝咖啡" Click="OnCoffee" VerticalAlignment="Center" />
