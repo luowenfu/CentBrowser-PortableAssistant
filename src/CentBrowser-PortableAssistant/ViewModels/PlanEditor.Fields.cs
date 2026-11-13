@@ -129,17 +129,22 @@ public sealed partial class PlanEditor
         }
     }
 
-    public string? TemplateError => NameTemplate.Validate(_plan.NameTemplate);
+    public string? TemplateError
+    {
+        get
+        {
+            if (NameTemplate.Validate(_plan.NameTemplate) is { } error) return error;
+            return NameTemplate.LengthError(RenderedName());
+        }
+    }
 
     /// <summary>按当前设置生成的文件，每种格式一个，带估算大小。</summary>
     public IReadOnlyList<OutputFile> FileNames
     {
         get
         {
-            if (TemplateError is not null) return [];
-            var name = NameTemplate.Render(_plan.NameTemplate, new NameValues(
-                _plan.NamePrefix, _plan.Name, _plan.Slug, DateTime.Now, _plan.IncludeProgram,
-                _install?.Version ?? "0.0.0.0", Environment.MachineName), _plan.AsciiFileName);
+            if (NameTemplate.Validate(_plan.NameTemplate) is not null) return [];
+            var name = RenderedName();
             var list = new List<OutputFile>();
             void Add(ArchiveFormats f, string ext)
             {
@@ -153,6 +158,10 @@ public sealed partial class PlanEditor
             return list;
         }
     }
+
+    private string RenderedName() => NameTemplate.Render(_plan.NameTemplate, new NameValues(
+        _plan.NamePrefix, _plan.Name, _plan.Slug, DateTime.Now, _plan.IncludeProgram,
+        _install?.Version ?? "0.0.0.0", Environment.MachineName), _plan.AsciiFileName);
 
     /// <summary>页面后台算好的未提取大小，算好前为 null。</summary>
     public long? RawSize

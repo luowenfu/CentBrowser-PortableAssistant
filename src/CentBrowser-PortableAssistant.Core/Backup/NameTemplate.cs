@@ -12,7 +12,7 @@ public sealed record NameValues(
     string BrowserVersion,
     string Computer);
 
-/// <summary>按模板生成备份文件名，扩展名另外加。模板本身最长 <see cref="MaxLength"/> 个字符。</summary>
+/// <summary>按模板生成备份文件名，扩展名另外加。拼出来的名字最长 <see cref="MaxLength"/> 个字符。</summary>
 public static partial class NameTemplate
 {
     public const int MaxLength = 80;
@@ -23,7 +23,6 @@ public static partial class NameTemplate
     public static string? Validate(string template)
     {
         if (string.IsNullOrWhiteSpace(template)) return "文件名模板不能为空";
-        if (template.Length > MaxLength) return $"文件名最长 {MaxLength} 个字符";
         if (!template.Contains("{时间}")) return "模板里要有 {时间}，否则同一天的备份会重名";
         var unknown = VariablePattern().Matches(template).Select(m => m.Value).FirstOrDefault(v => !Variables.Contains(v));
         return unknown is null ? null : $"不认识的变量 {unknown}";
@@ -42,6 +41,10 @@ public static partial class NameTemplate
             .Replace("{电脑名}", v.Computer);
         return Sanitize(result, asciiOnly);
     }
+
+    /// <summary>拼出来的名字超长时返回和模板错误一样给用户看的原因，没超长则返回 null。</summary>
+    public static string? LengthError(string rendered) =>
+        rendered.Length > MaxLength ? $"拼出来的文件名最长 {MaxLength} 个字符" : null;
 
     public static string Sanitize(string name, bool asciiOnly)
     {

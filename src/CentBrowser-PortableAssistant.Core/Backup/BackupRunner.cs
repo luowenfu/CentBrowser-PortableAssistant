@@ -8,7 +8,7 @@ namespace CentBrowser_PortableAssistant.Core.Backup;
 /// <summary>跑一个方案：检查、提取到暂存目录、打包到待上传目录、放进上传队列。</summary>
 public sealed class BackupRunner(HistoryStore history, UploadQueue queue)
 {
-    public static string? Validate(BackupPlan plan, AppConfig config)
+    public static string? Validate(BackupPlan plan, AppConfig config, BrowserInstall? install = null)
     {
         var password = SecretProtector.Unprotect(plan.PasswordProtected);
         if (string.IsNullOrEmpty(password)) return $"“{plan.Name}”还没设置解压密码";
@@ -33,7 +33,12 @@ public sealed class BackupRunner(HistoryStore history, UploadQueue queue)
                 return $"“{target.Name}”{ex.Message}";
             }
         }
-        return NameTemplate.Validate(plan.NameTemplate);
+        if (NameTemplate.Validate(plan.NameTemplate) is { } template) return template;
+        if (install is null) return null;
+        var rendered = NameTemplate.Render(plan.NameTemplate, new NameValues(
+            plan.NamePrefix, plan.Name, plan.Slug, DateTime.Now, plan.IncludeProgram, install.Version, Environment.MachineName),
+            plan.AsciiFileName);
+        return NameTemplate.LengthError(rendered);
     }
 
     /// <summary>算当前指纹并和上次成功备份时比较。</summary>
@@ -55,7 +60,7 @@ public sealed class BackupRunner(HistoryStore history, UploadQueue queue)
         bool lowPriority = false,
         bool fromAuto = false)
     {
-        if (Validate(plan, config) is { } problem) throw new BackupException(problem);
+        if (Validate(plan, config, install) is { } problem) throw new BackupException(problem);
         if (BrowserProcess.IsRunning(install)) throw new BackupException("Cent Browser 还开着，关掉后再备份", browserRunning: true);
 
         var watch = Stopwatch.StartNew();

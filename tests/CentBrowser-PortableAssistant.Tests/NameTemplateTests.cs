@@ -33,19 +33,22 @@ public class NameTemplateTests
     public void TemplateWithTimeIsValid() => Assert.Null(NameTemplate.Validate("{方案}_{时间}"));
 
     [Fact]
-    public void TemplateLongerThan80IsRejected()
-    {
-        var ok = new string('a', NameTemplate.MaxLength - "{时间}".Length) + "{时间}";
-        Assert.Null(NameTemplate.Validate(ok));
-        Assert.Equal($"文件名最长 {NameTemplate.MaxLength} 个字符", NameTemplate.Validate(ok + "a"));
-    }
-
-    [Fact]
-    public void RenderDoesNotCutLongNames()
+    public void LongRenderedNameIsRejectedWithoutCutting()
     {
         var plan = new string('名', 100);
         var name = NameTemplate.Render("{方案}_{时间}", Values with { Plan = plan }, asciiOnly: false);
         Assert.StartsWith(plan, name);
-        Assert.EndsWith("220509", name);
+        Assert.Equal($"拼出来的文件名最长 {NameTemplate.MaxLength} 个字符", NameTemplate.LengthError(name));
+        Assert.Null(NameTemplate.LengthError(name[..NameTemplate.MaxLength]));
+    }
+
+    [Fact]
+    public void LongTemplateIsAllowedWhenRenderedNameFits()
+    {
+        var template = "{时间}" + new string('.', 100);
+        Assert.Null(NameTemplate.Validate(template));
+        var name = NameTemplate.Render(template, Values, asciiOnly: false);
+        Assert.Equal("220509", name);
+        Assert.Null(NameTemplate.LengthError(name));
     }
 }

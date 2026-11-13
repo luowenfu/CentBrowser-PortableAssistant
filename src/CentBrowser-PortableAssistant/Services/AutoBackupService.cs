@@ -128,7 +128,7 @@ public sealed class AutoBackupService
             if (_app.Queue.Snapshot().Any(j => j.PlanId == plan.Id)) continue;
             if (_app.InstallFor(plan) is not { } install) continue;
             var state = _app.History.Read(h => h.For(plan.Id));
-            var problem = BackupRunner.Validate(plan, config);
+            var problem = BackupRunner.Validate(plan, config, install);
             var changed = problem is null && _app.Changes.Compute(plan, install);
             var decision = ScheduleRules.Decide(config.Frequency, now, state, changed || problem is not null);
             if (decision == PlanDecision.None) continue;
