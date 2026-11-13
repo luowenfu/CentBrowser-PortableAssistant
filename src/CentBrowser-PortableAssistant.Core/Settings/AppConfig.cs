@@ -36,7 +36,7 @@ public sealed class AppConfig
             Address = AppPaths.DefaultLocalBackupDir,
             RemoteDir = "",
         };
-        var plan = new BackupPlan { TargetIds = [local.Id] };
+        var plan = new BackupPlan();
         return new AppConfig { Plans = [plan], Targets = [local] };
     }
 }

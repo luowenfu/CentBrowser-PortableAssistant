@@ -377,7 +377,6 @@ public partial class PlansPage : UserControl
         {
             Name = $"方案 {config.Plans.Count + 1}",
             Slug = $"Plan{config.Plans.Count + 1}",
-            TargetIds = config.Targets.Where(t => !t.Disabled).Take(1).Select(t => t.Id).ToList(),
         });
     }
 
