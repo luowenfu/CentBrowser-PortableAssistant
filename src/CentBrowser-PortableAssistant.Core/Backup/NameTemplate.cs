@@ -12,7 +12,7 @@ public sealed record NameValues(
     string BrowserVersion,
     string Computer);
 
-/// <summary>按模板生成备份文件名，扩展名另外加。拼出来最长 <see cref="MaxLength"/> 个字符。</summary>
+/// <summary>按模板生成备份文件名，扩展名另外加。模板本身最长 <see cref="MaxLength"/> 个字符。</summary>
 public static partial class NameTemplate
 {
     public const int MaxLength = 80;
@@ -23,6 +23,7 @@ public static partial class NameTemplate
     public static string? Validate(string template)
     {
         if (string.IsNullOrWhiteSpace(template)) return "文件名模板不能为空";
+        if (template.Length > MaxLength) return $"文件名最长 {MaxLength} 个字符";
         if (!template.Contains("{时间}")) return "模板里要有 {时间}，否则同一天的备份会重名";
         var unknown = VariablePattern().Matches(template).Select(m => m.Value).FirstOrDefault(v => !Variables.Contains(v));
         return unknown is null ? null : $"不认识的变量 {unknown}";
@@ -31,28 +32,15 @@ public static partial class NameTemplate
     public static string Render(string template, NameValues v, bool asciiOnly)
     {
         var plan = asciiOnly ? v.PlanSlug : v.Plan;
-        var time = v.Time.ToString("HHmmss");
         var result = template
             .Replace("{前缀}", v.Prefix)
             .Replace("{方案}", plan)
             .Replace("{日期}", v.Time.ToString("yyyyMMdd"))
-            .Replace("{时间}", time)
+            .Replace("{时间}", v.Time.ToString("HHmmss"))
             .Replace("{类型}", v.IncludesProgram ? "Full" : "Data")
             .Replace("{浏览器版本}", v.BrowserVersion)
             .Replace("{电脑名}", v.Computer);
-        return Fit(Sanitize(result, asciiOnly), time);
-    }
-
-    /// <summary>超长从前面截。时间不在最后一段里时，结果改以时间为结尾，避免同一秒的备份重名。</summary>
-    private static string Fit(string name, string time)
-    {
-        if (name.Length <= MaxLength) return name;
-        var at = name.LastIndexOf(time, StringComparison.Ordinal);
-        var cut = at < 0 || at >= name.Length - MaxLength
-            ? name[^MaxLength..]
-            : name[Math.Max(0, at + time.Length - MaxLength)..(at + time.Length)];
-        var trimmed = cut.Trim('.', '_');
-        return trimmed.Length == 0 ? time : trimmed;
+        return Sanitize(result, asciiOnly);
     }
 
     public static string Sanitize(string name, bool asciiOnly)
