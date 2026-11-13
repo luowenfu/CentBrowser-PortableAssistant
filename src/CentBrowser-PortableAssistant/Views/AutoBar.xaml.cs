@@ -13,7 +13,7 @@ namespace CentBrowser_PortableAssistant.Views;
 /// <summary>主窗口底栏：开机启动、自动备份、居中的备份状态，以及待上传。</summary>
 public partial class AutoBar : UserControl
 {
-    private readonly DispatcherTimer _statusHold = new() { Interval = TimeSpan.FromSeconds(8) };
+    private readonly DispatcherTimer _statusHold = new() { Interval = TimeSpan.FromSeconds(5) };
     private bool _loading;
     private string? _dismissed;
     private string? _holdText;
@@ -175,7 +175,7 @@ public partial class AutoBar : UserControl
         HoldStatus(status.Text);
     }
 
-    /// <summary>取消和备份完成的那句只留 8 秒。进行中的进度会把倒计时停掉。</summary>
+    /// <summary>取消和备份完成的那句只留 5 秒。进行中的进度会把倒计时停掉。</summary>
     private void HoldStatus(string text)
     {
         var done = text == "已取消"
