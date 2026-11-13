@@ -194,10 +194,10 @@ public sealed class TagPlane
             return;
         }
         var shown = 0.70 + 0.30 * VisualUnit();
-        var from = FlightProgress.Nose(shown, x0, x1, x2, x3) - imageWidth;
+        var from = ImageLeft(shown, x0, x1, x2, x3, imageWidth);
         Move(shown, animate: false);
         _coasting = true;
-        var animation = new DoubleAnimation(from, x3 - imageWidth, TimeSpan.FromSeconds(remain))
+        var animation = new DoubleAnimation(from, x3, TimeSpan.FromSeconds(remain))
         {
             FillBehavior = FillBehavior.HoldEnd,
         };
@@ -231,7 +231,7 @@ public sealed class TagPlane
     {
         var imageWidth = ImageWidth();
         if (imageWidth <= 0 || !TryBounds(out var x0, out var x1, out var x2, out var x3)) return;
-        var left = FlightProgress.Nose(progress, x0, x1, x2, x3) - imageWidth;
+        var left = ImageLeft(progress, x0, x1, x2, x3, imageWidth);
         _layer.Clip = new RectangleGeometry(new Rect(x0, 0, x3 - x0, Math.Max(_layer.ActualHeight, _grid.ActualHeight)));
         Canvas.SetTop(_plane, Math.Max(0, (_grid.ActualHeight - _plane.Height) / 2));
         _plane.Visibility = Visibility.Visible;
@@ -297,6 +297,10 @@ public sealed class TagPlane
     }
 
     private double Middle(FrameworkElement line) => line.TranslatePoint(new Point(line.ActualWidth / 2, 0), _layer).X;
+
+    /// <summary>前两段机头贴分割线。最后一段多飞出一张图，到 100% 时图片左缘贴在终点上。</summary>
+    private static double ImageLeft(double progress, double x0, double x1, double x2, double x3, double imageWidth) =>
+        FlightProgress.Nose(progress, x0, x1, x2, x3 + imageWidth) - imageWidth;
 
     private double ImageWidth()
     {

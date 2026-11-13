@@ -21,8 +21,8 @@ public static class FlightProgress
     }
 
     /// <summary>
-    /// 机头位置。0–0.20 在提取两条线之间，0.20–0.70 在打包两条线之间，0.70–1 在目的地左线和终点之间。
-    /// 这些数只标出哪一段，线段本身的像素长短另算。
+    /// 机头位置。0–0.20 在提取两条线之间，0.20–0.70 在打包两条线之间，0.70–1 在目的地左线和传入的上传终点之间。
+    /// 这些数只标出哪一段，线段本身的像素长短另算。上传到 100% 时机头要停在图片左缘贴上终点的位置，所以传入的终点比可见终点多出一张图宽。
     /// </summary>
     public static double Nose(double progress, double extractStart, double extractEnd, double packEnd, double uploadEnd)
     {
