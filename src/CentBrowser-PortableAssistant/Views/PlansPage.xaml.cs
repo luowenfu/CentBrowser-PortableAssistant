@@ -385,7 +385,7 @@ public partial class PlansPage : UserControl
         LoadPlans(null);
     }
 
-    /// <summary>按当前勾选估算未压缩大小，后台算，只保留最后一次请求的结果。</summary>
+    /// <summary>按当前勾选估算未提取大小，后台算，只保留最后一次请求的结果。</summary>
     private async Task EstimateSizeAsync()
     {
         var editor = _editor;

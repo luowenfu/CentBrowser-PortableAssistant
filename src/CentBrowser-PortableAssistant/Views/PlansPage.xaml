@@ -555,23 +555,17 @@
                     <!-- 两个大小并排，共用一段 -->
                     <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
                         <StackPanel>
-                            <TextBlock Text="未压缩" Style="{StaticResource TagLabel}" />
-                            <TextBlock x:Name="SizeText" Text="…" FontFamily="{StaticResource MonoFont}" FontSize="18" Foreground="{StaticResource Text}" />
+                            <TextBlock Text="未提取" Style="{StaticResource TagLabel}" />
+                            <TextBlock x:Name="SizeText" Text="…" FontWeight="Normal" Foreground="{StaticResource Text}" Margin="0,3,0,0" />
                         </StackPanel>
                         <StackPanel Margin="20,0,0,0" ToolTip="按当前打包格式和上次备份的压缩比估算">
-                            <TextBlock Text="压缩后" Style="{StaticResource TagLabel}" />
-                            <TextBlock Text="{Binding PackedSize}" FontFamily="{StaticResource MonoFont}" FontSize="18" Foreground="{StaticResource Text}" />
+                            <TextBlock Text="提取后" Style="{StaticResource TagLabel}" />
+                            <TextBlock Text="{Binding PackedSize}" FontWeight="Normal" Foreground="{StaticResource Text}" Margin="0,3,0,0" />
                         </StackPanel>
                     </StackPanel>
                     <Line Grid.Column="4" Style="{StaticResource Perforation}" />
-                    <StackPanel Grid.Column="5" VerticalAlignment="Center" MaxWidth="160">
-                        <TextBlock Text="目的地" Style="{StaticResource TagLabel}" />
-                        <TextBlock Text="{Binding Destinations}" Foreground="{StaticResource Text}" Margin="0,3,0,0" TextTrimming="CharacterEllipsis"
-                                   ToolTip="{Binding DestinationsDetail}" />
-                    </StackPanel>
-                    <Line Grid.Column="6" Style="{StaticResource Perforation}" />
-                    <StackPanel Grid.Column="7" VerticalAlignment="Center">
-                        <TextBlock Text="将生成" Style="{StaticResource TagLabel}" />
+                    <StackPanel Grid.Column="5" VerticalAlignment="Center">
+                        <TextBlock Text="待打包" Style="{StaticResource TagLabel}" />
                         <ItemsControl ItemsSource="{Binding FileNames}" Margin="0,2,0,0">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
@@ -593,6 +587,12 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
+                    </StackPanel>
+                    <Line Grid.Column="6" Style="{StaticResource Perforation}" />
+                    <StackPanel Grid.Column="7" VerticalAlignment="Center" MaxWidth="160">
+                        <TextBlock Text="目的地" Style="{StaticResource TagLabel}" />
+                        <TextBlock Text="{Binding Destinations}" Foreground="{StaticResource Text}" Margin="0,3,0,0" TextTrimming="CharacterEllipsis"
+                                   ToolTip="{Binding DestinationsDetail}" />
                     </StackPanel>
                     <StackPanel Grid.Column="8" Orientation="Horizontal" VerticalAlignment="Center" Margin="64,0,0,0">
                         <TextBlock Text="{Binding Problem}" Style="{StaticResource TagMessage}" Foreground="{StaticResource Danger}"

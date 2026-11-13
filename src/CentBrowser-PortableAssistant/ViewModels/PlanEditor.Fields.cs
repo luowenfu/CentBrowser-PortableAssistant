@@ -154,7 +154,7 @@ public sealed partial class PlanEditor
         }
     }
 
-    /// <summary>页面后台算好的未压缩大小，算好前为 null。</summary>
+    /// <summary>页面后台算好的未提取大小，算好前为 null。</summary>
     public long? RawSize
     {
         get => _rawSize;
@@ -167,7 +167,7 @@ public sealed partial class PlanEditor
         }
     }
 
-    /// <summary>行李牌上的"压缩后"：按当前这一种格式估算。</summary>
+    /// <summary>行李牌上的"提取后"：按当前这一种格式估算。</summary>
     public string PackedSize
     {
         get

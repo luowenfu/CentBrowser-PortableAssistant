@@ -97,7 +97,7 @@ public sealed partial class PlanEditor : ObservableObject
     private readonly Dictionary<string, double> _ratios;
     private long? _rawSize;
 
-    /// <summary>备份一开始就按现在的时间重画将生成的文件名。</summary>
+    /// <summary>备份一开始就按现在的时间重画待打包的文件名。</summary>
     public void RefreshFileNames() => Raise(nameof(FileNames));
 
     public BrowserInstall? Install => _install;
