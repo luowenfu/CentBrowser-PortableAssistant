@@ -20,8 +20,8 @@ public sealed class AppConfig
 
     public AutoFrequency Frequency { get; set; } = AutoFrequency.Daily;
 
-    /// <summary>慢速备份时的上传限速，单位 KB/s，0 表示不限。本机文件夹不受限。</summary>
-    public int SlowUploadKbps { get; set; } = 1024;
+    /// <summary>慢速备份时的上传限速，单位 KB/s，0 表示不限。默认 2 MB/s。本机文件夹不受限。</summary>
+    public int SlowUploadKbps { get; set; } = 2048;
 
     public List<BackupPlan> Plans { get; set; } = [];
 
