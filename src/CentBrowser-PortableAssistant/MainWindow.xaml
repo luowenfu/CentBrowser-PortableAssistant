@@ -14,13 +14,13 @@
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button Style="{StaticResource QuietButton}" Click="OnOpenTargets">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Style="{StaticResource Icon}" Text="&#xE753;" FontSize="14" />
+                            <TextBlock Style="{StaticResource Icon}" Text="&#xE128;" FontSize="14" />
                             <TextBlock Text="目的地设置" Margin="8,0,0,0" />
                         </StackPanel>
                     </Button>
                     <Button Style="{StaticResource QuietButton}" Margin="4,0,0,0" Click="OnOpenAbout">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Style="{StaticResource Icon}" Text="&#xE946;" FontSize="14" />
+                            <TextBlock Style="{StaticResource Icon}" Text="&#xE9CE;" FontSize="14" />
                             <TextBlock Text="关于" Margin="8,0,0,0" />
                         </StackPanel>
                     </Button>
