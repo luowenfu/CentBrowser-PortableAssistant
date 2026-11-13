@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
+using System.Windows.Threading;
 using CentBrowser_PortableAssistant.Core.Backup;
 using CentBrowser_PortableAssistant.Core.Settings;
 using CentBrowser_PortableAssistant.Core.Upload;
@@ -15,8 +16,10 @@ public partial class AutoBar : UserControl
     /// <summary>限速下拉框各档对应的 KB/s，0 是不限速。</summary>
     private static readonly int[] Limits = [0, 512, 1024, 2048, 5120];
 
+    private readonly DispatcherTimer _statusHold = new() { Interval = TimeSpan.FromSeconds(8) };
     private bool _loading;
     private string? _dismissed;
+    private string? _holdText;
     private UploadProgress? _progress;
     private DateTime _lastRefresh;
 
@@ -35,6 +38,14 @@ public partial class AutoBar : UserControl
             if (DateTime.UtcNow - _lastRefresh >= TimeSpan.FromMilliseconds(500)) UpdateQueue();
         });
         App.Backup.CancelStateChanged += () => Dispatcher.BeginInvoke(ShowCancel);
+        _statusHold.Tick += (_, _) =>
+        {
+            _statusHold.Stop();
+            if (App.Status.Text != _holdText) return;
+            _dismissed = _holdText;
+            StatusText.Text = "";
+            StatusText.ToolTip = null;
+        };
         Load();
         UpdateQueue();
         ShowStatus();
@@ -150,6 +161,7 @@ public partial class AutoBar : UserControl
         {
             StatusText.Text = "";
             StatusText.ToolTip = null;
+            HoldStatus("");
             return;
         }
         if (status.Arrived.Count > 0 && status.DeliveryError is { } failure)
@@ -158,11 +170,25 @@ public partial class AutoBar : UserControl
             StatusText.Inlines.Add(new Run(PlanNameText.ClipWithin(status.Text, names)) { Foreground = (Brush)FindResource("Text2") });
             StatusText.Inlines.Add(new Run("\n" + failure) { Foreground = (Brush)FindResource("Danger") });
             StatusText.ToolTip = status.Text + "\n" + failure;
+            HoldStatus(status.Text);
             return;
         }
         StatusText.Text = PlanNameText.ClipWithin(status.Text, names);
         StatusText.ToolTip = status.Text;
         StatusText.Foreground = (Brush)FindResource(status.IsError ? "Danger" : "Text2");
+        HoldStatus(status.Text);
+    }
+
+    /// <summary>取消和备份完成的那句只留 8 秒。进行中的进度会把倒计时停掉。</summary>
+    private void HoldStatus(string text)
+    {
+        var done = text == "已取消"
+            || text.Contains("已送达", StringComparison.Ordinal)
+            || text.Contains("备份完成", StringComparison.Ordinal);
+        _statusHold.Stop();
+        if (!done) return;
+        _holdText = text;
+        _statusHold.Start();
     }
 
     private void OnFrequencyChanged(object sender, SelectionChangedEventArgs e)

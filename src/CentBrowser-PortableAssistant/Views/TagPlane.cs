@@ -84,8 +84,14 @@ public sealed class TagPlane
         var flight = App.Status.Flight;
         if (flight is not double progress)
         {
-            if (_destinationStart is not null && !App.Status.IsError)
+            if (ShouldGlideOut())
             {
+                if (_destinationStart is null)
+                {
+                    _destinationStart = DateTime.UtcNow;
+                    _shownUnit = 0;
+                    _trackTo = -1;
+                }
                 _realUnit = 1;
                 _awaitingEnd = true;
                 StartGlide();
@@ -147,6 +153,19 @@ public sealed class TagPlane
             BindingOperations.SetBinding(target, property, binding);
         _held.Clear();
         Frozen = false;
+    }
+
+    /// <summary>
+    /// 本地文件夹常常一秒传完，完成通知先到，界面还没看见上传进度。
+    /// 这种时候先把目的地飞完，再刷新行李牌。
+    /// </summary>
+    private bool ShouldGlideOut()
+    {
+        if (App.Status.IsError || App.Status.Text == "已取消") return false;
+        if (_destinationStart is not null) return _shownUnit < 0.999;
+        if (!Frozen) return false;
+        var text = App.Status.Text;
+        return text.Contains("已送达", StringComparison.Ordinal) || text.Contains("备份完成", StringComparison.Ordinal);
     }
 
     private void StartGlide()

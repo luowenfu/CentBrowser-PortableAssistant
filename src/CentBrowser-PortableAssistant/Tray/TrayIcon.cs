@@ -67,10 +67,10 @@ public sealed class TrayIcon : IDisposable
 
         var menu = new ContextMenuStrip { ShowImageMargin = true };
         menu.Items.Add("打开主界面", null, (_, _) => OpenRequested?.Invoke());
+        menu.Items.Add(_startItem);
         menu.Items.Add(_backupMenu);
         menu.Items.Add("立即重试上传", null, (_, _) => RetryRequested?.Invoke());
         menu.Items.Add(new ToolStripSeparator());
-        menu.Items.Add(_startItem);
         menu.Items.Add(_autoItem);
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add("退出", null, (_, _) => ExitRequested?.Invoke());
@@ -83,8 +83,11 @@ public sealed class TrayIcon : IDisposable
     {
         var list = plans.ToList();
         _backupMenu.DropDownItems.Clear();
-        _backupMenu.DropDownItems.Add(PlanMenu("全部方案", null));
-        _backupMenu.DropDownItems.Add(new ToolStripSeparator());
+        if (list.Count != 1)
+        {
+            _backupMenu.DropDownItems.Add(PlanMenu("全部方案", null));
+            if (list.Count > 0) _backupMenu.DropDownItems.Add(new ToolStripSeparator());
+        }
         foreach (var (id, name) in list)
             _backupMenu.DropDownItems.Add(PlanMenu(name, id));
     }
