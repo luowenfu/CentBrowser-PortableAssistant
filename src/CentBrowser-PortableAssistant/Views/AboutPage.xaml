@@ -44,10 +44,10 @@
             <Setter Property="Foreground" Value="{StaticResource Text2}" />
             <Setter Property="CaretBrush" Value="Transparent" />
         </Style>
-        <!-- 自动换行行距。显示模式下默认是 19，这里 28。多出来的 9 在最后一行下面，用下边距抵掉 -->
+        <!-- 自动换行行距 23。显示模式下默认是 19，多出来的 4 在最后一行下面，用下边距抵掉 -->
         <Style x:Key="IntroText" TargetType="TextBox" BasedOn="{StaticResource CopyText}">
-            <Setter Property="TextBlock.LineHeight" Value="28" />
-            <Setter Property="Margin" Value="0,0,0,-9" />
+            <Setter Property="TextBlock.LineHeight" Value="23" />
+            <Setter Property="Margin" Value="0,0,0,-4" />
         </Style>
     </UserControl.Resources>
     <Grid Margin="32,24,32,24">
@@ -81,9 +81,9 @@
                 <TextBlock Text="能做什么" Style="{StaticResource SectionTitle}" Margin="0,32,0,8" />
                 <TextBox Style="{StaticResource IntroText}"
                          Text="把 Cent Browser 浏览器的用户书签、历史、设置和扩展，按你的选择打成带密码的压缩包或自解压 exe，送到 SMB、WebDAV、FTP 或本地文件夹。带走浏览器，换一台电脑解压就能用。" />
-                <TextBox Style="{StaticResource IntroText}" Margin="0,8,0,-9"
+                <TextBox Style="{StaticResource IntroText}" Margin="0,15,0,-4"
                          Text="浏览器保存的密码、Cookie、缓存和自动填充不会带走。打开自动备份并设好内容后，浏览器空闲时会在后台默默备好，不必再管，也几乎不占资源。" />
-                <TextBox Style="{StaticResource IntroText}" Margin="0,8,0,-9"
+                <TextBox Style="{StaticResource IntroText}" Margin="0,15,0,-4"
                          Text="也能当瘦身、提取工具用：缓存这些累赘都留在原地，包一下子就轻了 ～(´▽｀)" />
 
                 <TextBlock Text="数据保存在哪" Style="{StaticResource SectionTitle}" Margin="0,32,0,8" />
