@@ -312,7 +312,7 @@
                                         <ColumnDefinition Width="64" />
                                         <ColumnDefinition Width="80" />
                                         <ColumnDefinition Width="112" />
-                                        <ColumnDefinition Width="8" />
+                                        <ColumnDefinition Width="12" />
                                     </Grid.ColumnDefinitions>
                                     <Border Padding="8,6">
                                         <DockPanel>

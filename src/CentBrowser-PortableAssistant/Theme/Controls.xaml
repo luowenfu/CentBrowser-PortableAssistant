@@ -501,8 +501,8 @@
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
     </Style>
 
-    <!-- 滚动条：系统默认大约 17，收到一半。滑块是圆头，没有上下箭头 -->
-    <sys:Double x:Key="ScrollBarSize">8</sys:Double>
+    <!-- 滚动条：比系统默认窄一档。滑块是圆头，两端有箭头 -->
+    <sys:Double x:Key="ScrollBarSize">12</sys:Double>
 
     <Style x:Key="ScrollThumb" TargetType="Thumb">
         <Setter Property="Focusable" Value="False" />
@@ -510,7 +510,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Thumb">
-                    <Border x:Name="Thumb" Background="{StaticResource LineStrong}" CornerRadius="4" Margin="1" />
+                    <Border x:Name="Thumb" Background="{StaticResource LineStrong}" CornerRadius="4" Margin="2" />
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="Thumb" Property="Background" Value="{StaticResource Text2}" />
@@ -537,9 +537,48 @@
         </Setter>
     </Style>
 
+    <!-- 两端的箭头。按住会连续滚动一行 -->
+    <Style x:Key="ScrollLineButton" TargetType="RepeatButton">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Foreground" Value="{StaticResource Text2}" />
+        <Setter Property="Width" Value="{StaticResource ScrollBarSize}" />
+        <Setter Property="Height" Value="{StaticResource ScrollBarSize}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RepeatButton">
+                    <Border x:Name="Bd" Background="Transparent" CornerRadius="4">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource Hover}" />
+                            <Setter Property="Foreground" Value="{StaticResource Text}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource SurfaceStep}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <ControlTemplate x:Key="VerticalScrollBarTemplate" TargetType="ScrollBar">
         <Grid Width="{StaticResource ScrollBarSize}" Background="Transparent">
-            <Track x:Name="PART_Track" IsDirectionReversed="True">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <RepeatButton Grid.Row="0" Command="{x:Static ScrollBar.LineUpCommand}" Style="{StaticResource ScrollLineButton}">
+                <Path Data="M0,4 L4,0 L8,4" Width="8" Height="4" Stretch="Fill"
+                      Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RepeatButton}}"
+                      StrokeThickness="1.4" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
+            </RepeatButton>
+            <Track x:Name="PART_Track" Grid.Row="1" IsDirectionReversed="True">
                 <Track.DecreaseRepeatButton>
                     <RepeatButton Command="{x:Static ScrollBar.PageUpCommand}" Style="{StaticResource ScrollPageButton}" />
                 </Track.DecreaseRepeatButton>
@@ -547,15 +586,30 @@
                     <RepeatButton Command="{x:Static ScrollBar.PageDownCommand}" Style="{StaticResource ScrollPageButton}" />
                 </Track.IncreaseRepeatButton>
                 <Track.Thumb>
-                    <Thumb Style="{StaticResource ScrollThumb}" MinHeight="28" />
+                    <Thumb Style="{StaticResource ScrollThumb}" MinHeight="20" />
                 </Track.Thumb>
             </Track>
+            <RepeatButton Grid.Row="2" Command="{x:Static ScrollBar.LineDownCommand}" Style="{StaticResource ScrollLineButton}">
+                <Path Data="M0,0 L4,4 L8,0" Width="8" Height="4" Stretch="Fill"
+                      Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RepeatButton}}"
+                      StrokeThickness="1.4" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
+            </RepeatButton>
         </Grid>
     </ControlTemplate>
 
     <ControlTemplate x:Key="HorizontalScrollBarTemplate" TargetType="ScrollBar">
         <Grid Height="{StaticResource ScrollBarSize}" Background="Transparent">
-            <Track x:Name="PART_Track">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <RepeatButton Grid.Column="0" Command="{x:Static ScrollBar.LineLeftCommand}" Style="{StaticResource ScrollLineButton}">
+                <Path Data="M4,0 L0,4 L4,8" Width="4" Height="8" Stretch="Fill"
+                      Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RepeatButton}}"
+                      StrokeThickness="1.4" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
+            </RepeatButton>
+            <Track x:Name="PART_Track" Grid.Column="1">
                 <Track.DecreaseRepeatButton>
                     <RepeatButton Command="{x:Static ScrollBar.PageLeftCommand}" Style="{StaticResource ScrollPageButton}" />
                 </Track.DecreaseRepeatButton>
@@ -563,9 +617,14 @@
                     <RepeatButton Command="{x:Static ScrollBar.PageRightCommand}" Style="{StaticResource ScrollPageButton}" />
                 </Track.IncreaseRepeatButton>
                 <Track.Thumb>
-                    <Thumb Style="{StaticResource ScrollThumb}" MinWidth="28" />
+                    <Thumb Style="{StaticResource ScrollThumb}" MinWidth="20" />
                 </Track.Thumb>
             </Track>
+            <RepeatButton Grid.Column="2" Command="{x:Static ScrollBar.LineRightCommand}" Style="{StaticResource ScrollLineButton}">
+                <Path Data="M0,0 L4,4 L0,8" Width="4" Height="8" Stretch="Fill"
+                      Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RepeatButton}}"
+                      StrokeThickness="1.4" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
+            </RepeatButton>
         </Grid>
     </ControlTemplate>
 
