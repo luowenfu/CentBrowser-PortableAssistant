@@ -67,6 +67,14 @@
         <Style x:Key="Group" TargetType="TextBlock" BasedOn="{StaticResource FieldLabel}">
             <Setter Property="Margin" Value="0,20,0,8" />
         </Style>
+        <!-- 字和左侧标题一样。悬停时跟顶栏「关于」一样有底 -->
+        <Style x:Key="LabelButton" TargetType="Button" BasedOn="{StaticResource QuietButton}">
+            <Setter Property="Height" Value="20" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="Padding" Value="6,0" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
         <Style x:Key="TagLabel" TargetType="TextBlock">
             <Setter Property="FontSize" Value="12" />
             <Setter Property="Foreground" Value="{StaticResource Text2}" />
@@ -469,7 +477,10 @@
                             <TextBlock Style="{StaticResource Hint}" Text="zip 密码只能用英文、数字和符号" />
                         </StackPanel>
 
-                        <TextBlock Text="文件名" Style="{StaticResource Group}" />
+                        <DockPanel Margin="0,20,0,8">
+                            <Button DockPanel.Dock="Right" Content="默认" Style="{StaticResource LabelButton}" Click="OnResetNameTemplate" />
+                            <TextBlock Text="文件名" Style="{StaticResource FieldLabel}" Margin="0" VerticalAlignment="Center" />
+                        </DockPanel>
                         <TextBox x:Name="TemplateBox" Text="{Binding NameTemplateText, UpdateSourceTrigger=PropertyChanged}"
                                  FontFamily="{StaticResource MonoFont}" />
                         <WrapPanel x:Name="Variables" Margin="0,8,0,0" />

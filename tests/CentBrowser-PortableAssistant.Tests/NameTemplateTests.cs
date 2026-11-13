@@ -31,4 +31,22 @@ public class NameTemplateTests
 
     [Fact]
     public void TemplateWithTimeIsValid() => Assert.Null(NameTemplate.Validate("{方案}_{时间}"));
+
+    [Fact]
+    public void LongNameIsCutFromTheFrontAndKeepsTime()
+    {
+        var values = Values with { Plan = new string('名', 100) };
+        var name = NameTemplate.Render("{方案}_{日期}-{时间}_{类型}", values, asciiOnly: false);
+        Assert.Equal(NameTemplate.MaxLength, name.Length);
+        Assert.Contains("220509", name);
+        Assert.EndsWith("Full", name);
+    }
+
+    [Fact]
+    public void TimeStaysAtTheEndWhenTheTailWouldHideIt()
+    {
+        var name = NameTemplate.Render("{时间}_" + new string('a', 90), Values, asciiOnly: false);
+        Assert.True(name.Length <= NameTemplate.MaxLength);
+        Assert.EndsWith("220509", name);
+    }
 }

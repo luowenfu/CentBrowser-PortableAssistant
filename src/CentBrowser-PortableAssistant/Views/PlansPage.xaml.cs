@@ -244,6 +244,12 @@ public partial class PlansPage : UserControl
         RevealButton.Content = show ? "隐藏" : "显示";
     }
 
+    private void OnResetNameTemplate(object sender, RoutedEventArgs e)
+    {
+        if (_editor is null || _editor.NameTemplateText == NameTemplateDefaults.Template) return;
+        _editor.NameTemplateText = NameTemplateDefaults.Template;
+    }
+
     private void InsertVariable(string v)
     {
         var at = TemplateBox.CaretIndex;
