@@ -80,7 +80,7 @@
                 <TextBox Style="{StaticResource CopyText}" Margin="0,8,0,0"
                          Text="密码、Cookie、缓存和自动填充不会带走。打开“开机启动”后开机自启动并常驻托盘。再打开“自动备份”，关掉浏览器就自动备份，按设定的频率进行，勾选的用户数据没变化就跳过。" />
                 <TextBox Style="{StaticResource CopyText}" Margin="0,8,0,0"
-                         Text="也能当瘦身工具用：缓存这些累赘都留在原地，包一下子就轻了 ～(´▽｀)" />
+                         Text="也能当瘦身、提取工具用：缓存这些累赘都留在原地，包一下子就轻了 ～(´▽｀)" />
 
                 <TextBlock Text="数据保存在哪" Style="{StaticResource SectionTitle}" Margin="0,32,0,8" />
                 <Border Style="{StaticResource Card}" Padding="16">
