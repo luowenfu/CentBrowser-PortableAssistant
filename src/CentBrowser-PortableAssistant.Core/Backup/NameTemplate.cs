@@ -15,7 +15,7 @@ public sealed record NameValues(
 /// <summary>按模板生成备份文件名，扩展名另外加。拼出来的名字最长 <see cref="MaxLength"/> 个字符。</summary>
 public static partial class NameTemplate
 {
-    public const int MaxLength = 80;
+    public const int MaxLength = 50;
 
     public static readonly string[] Variables = ["{前缀}", "{方案}", "{日期}", "{时间}", "{类型}", "{浏览器版本}", "{电脑名}"];
 
