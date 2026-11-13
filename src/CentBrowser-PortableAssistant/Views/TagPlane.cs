@@ -34,7 +34,7 @@ public sealed class TagPlane
     private bool _shown;
 
     /// <summary>目的地这一段再快也要飞满这么久。本地文件夹常常一秒就复制完。</summary>
-    private const double DestinationSeconds = 2;
+    private const double DestinationSeconds = 1;
 
     /// <summary>进度大约一秒才来一次。把这一跳摊开飞，避免一顿一顿。</summary>
     private const double SampleSeconds = 1;
@@ -182,7 +182,7 @@ public sealed class TagPlane
         CompositionTarget.Rendering -= OnGlide;
     }
 
-    /// <summary>按帧往前飞。新进度摊到大约一秒里，整段再快也不少于两秒。</summary>
+    /// <summary>按帧往前飞。新进度摊到大约一秒里，整段再快也不少于一秒。</summary>
     private void OnGlide(object? sender, EventArgs e)
     {
         if (_destinationStart is not { } start)
