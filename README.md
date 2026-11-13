@@ -15,8 +15,8 @@
 
 ## 下载
 
-- [不带运行时](https://github.com/luowenfu/CentBrowser-PortableAssistant/releases/download/v1.4/CentBrowser-PortableAssistant-v1.4.exe)（4.0 MB，需要 .NET 8 桌面运行时）
-- [自带运行时](https://github.com/luowenfu/CentBrowser-PortableAssistant/releases/download/v1.4/CentBrowser-PortableAssistant-v1.4-selfcontained.exe)（70.1 MB，不用另装运行时）
+- [不带运行时](https://github.com/luowenfu/CentBrowser-PortableAssistant/releases/download/v1.5/CentBrowser-PortableAssistant-v1.5.exe)（5.8 MB，需要 .NET 8 桌面运行时）
+- [自带运行时](https://github.com/luowenfu/CentBrowser-PortableAssistant/releases/download/v1.5/CentBrowser-PortableAssistant-v1.5-selfcontained.exe)（70.7 MB，不用另装运行时）
 
 ## 使用
 
@@ -80,3 +80,4 @@
 
 - [7-Zip](https://www.7-zip.org/) 25.01，GNU LGPL，见 `third_party/7zip/License.txt`
 - [FluentFTP](https://github.com/robinrodricks/FluentFTP)，MIT
+- [SharpVectors](https://github.com/ElinamLLC/SharpVectors) 1.8.6，BSD-3-Clause
