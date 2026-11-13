@@ -52,9 +52,9 @@
         </Grid.RowDefinitions>
 
         <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <StackPanel MaxWidth="600" HorizontalAlignment="Left">
-                <StackPanel Orientation="Horizontal">
-                    <Image Source="pack://application:,,,/Assets/app.png" Width="48" Height="48" RenderOptions.BitmapScalingMode="HighQuality" />
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Image Source="pack://application:,,,/Assets/app.png" Width="64" Height="64" RenderOptions.BitmapScalingMode="HighQuality" />
                     <StackPanel Margin="16,0,0,0" VerticalAlignment="Center">
                         <TextBlock Text="Cent Browser 便携助手" Style="{StaticResource PageTitle}" />
                         <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
@@ -73,6 +73,7 @@
                     </StackPanel>
                 </StackPanel>
 
+                <StackPanel MaxWidth="600" HorizontalAlignment="Left">
                 <TextBlock Text="能做什么" Style="{StaticResource SectionTitle}" Margin="0,32,0,8" />
                 <TextBox Style="{StaticResource CopyText}"
                          Text="把 Cent Browser 连同选中用户的书签、历史、设置和扩展，打成一个带密码的压缩包或自解压 exe，送到 SMB、WebDAV、FTP 或本地文件夹。换一台电脑下载下来，输入密码解压，就能直接用。" />
@@ -105,6 +106,7 @@
                     <TextBox Style="{StaticResource CopyText}" Foreground="{StaticResource Muted}" VerticalAlignment="Center"
                              Text="压缩由 7-Zip 提供，免费开源" />
                     <Button Style="{StaticResource QuietButton}" Content="查看许可" Margin="4,0,0,0" Click="OnOpenLicense" />
+                </StackPanel>
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>
