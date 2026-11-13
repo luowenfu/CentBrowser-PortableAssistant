@@ -21,7 +21,7 @@ public static class ReleaseNotesDocument
 
     public static UIElement Create(string? markdown)
     {
-        var root = new StackPanel();
+        var root = new StackPanel { Margin = new Thickness(0, 0, 16, 0) };
         var blocks = ReleaseMarkdown.Parse(markdown);
         if (blocks.Count == 0)
         {
