@@ -553,14 +553,9 @@
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="4*" MinWidth="400" />
                         <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="3*" />
+                        <ColumnDefinition Width="3*" MinWidth="240" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <!-- 飞机在文字下面。铺满整牌，飞出起终点的部分另做裁切 -->
-                    <Canvas x:Name="PlaneLayer" Grid.ColumnSpan="9" IsHitTestVisible="False">
-                        <Image x:Name="Plane" Height="32" Source="pack://application:,,,/Assets/plane.png"
-                               RenderOptions.BitmapScalingMode="HighQuality" Visibility="Collapsed" IsHitTestVisible="False" />
-                    </Canvas>
                     <Ellipse Width="14" Height="14" Fill="{StaticResource Bg}" Stroke="{StaticResource AccentHover}" VerticalAlignment="Center" Margin="0,0,16,0" />
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                         <TextBlock Text="方案" Style="{StaticResource TagLabel}" />
@@ -606,12 +601,17 @@
                     </StackPanel>
                     <Line x:Name="PackLine" Grid.Column="6" Style="{StaticResource Perforation}"
                           Visibility="{Binding ShowDestination, Converter={StaticResource Vis}}" />
-                    <!-- 这一列和待打包按 3:4 分剩余宽度。名字仍最多 160，避免被拉得满列都是 -->
-                    <StackPanel x:Name="DestinationPanel" Grid.Column="7" VerticalAlignment="Center" HorizontalAlignment="Left" MaxWidth="160"
+                    <!-- 这一列和待打包按 3:4 分剩余宽度，再窄也不小于 240 -->
+                    <StackPanel x:Name="DestinationPanel" Grid.Column="7" VerticalAlignment="Center"
                                 Visibility="{Binding ShowDestination, Converter={StaticResource Vis}}">
                         <TextBlock Text="目的地" Style="{StaticResource TagLabel}" />
                         <TextBlock x:Name="DestinationText" Text="{Binding Destinations}" Foreground="{StaticResource Text}" Margin="0,3,0,0" TextTrimming="CharacterEllipsis"
-                                   ToolTip="{Binding DestinationsDetail}" />
+                                   ToolTip="{Binding DestinationsDetail}">
+                            <TextBlock.MaxWidth>
+                                <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=StackPanel}"
+                                         Converter="{StaticResource PositiveWidth}" />
+                            </TextBlock.MaxWidth>
+                        </TextBlock>
                     </StackPanel>
                     <StackPanel Grid.Column="8" Orientation="Horizontal" VerticalAlignment="Center" Margin="64,0,0,0">
                         <TextBlock x:Name="ProblemText" Text="{Binding Problem}" Style="{StaticResource TagMessage}" Foreground="{StaticResource Danger}"
@@ -632,6 +632,11 @@
                             </Image.ToolTip>
                         </Image>
                     </StackPanel>
+                    <!-- 飞机在文字上面。铺满整牌，飞出起终点的部分另做裁切 -->
+                    <Canvas x:Name="PlaneLayer" Grid.ColumnSpan="9" IsHitTestVisible="False" Panel.ZIndex="1">
+                        <Image x:Name="Plane" Height="32" Source="pack://application:,,,/Assets/plane.png"
+                               RenderOptions.BitmapScalingMode="HighQuality" Visibility="Collapsed" IsHitTestVisible="False" />
+                    </Canvas>
                 </Grid>
             </Border>
         </Grid>
