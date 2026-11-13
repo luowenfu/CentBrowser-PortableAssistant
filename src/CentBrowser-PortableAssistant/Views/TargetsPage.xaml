@@ -26,7 +26,7 @@
                                                     Content="{TemplateBinding Content}"
                                                     ContentTemplate="{TemplateBinding ContentTemplate}">
                                 <ScrollContentPresenter.Margin>
-                                    <Thickness Left="0" Top="0" Bottom="0" Right="{x:Static SystemParameters.VerticalScrollBarWidth}" />
+                                    <Thickness Left="0" Top="0" Bottom="0" Right="{StaticResource ScrollBarSize}" />
                                 </ScrollContentPresenter.Margin>
                             </ScrollContentPresenter>
                             <ScrollBar x:Name="PART_VerticalScrollBar" HorizontalAlignment="Right"

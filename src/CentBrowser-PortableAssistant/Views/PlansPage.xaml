@@ -12,7 +12,7 @@
                 <DockPanel>
                     <!-- 打不开的类型不显示按钮，但藏起来仍占位，类型才能上下对齐 -->
                     <Button DockPanel.Dock="Right" Content="打开" ToolTip="{Binding Tip}" Click="OnOpenTarget"
-                            Margin="4,0,0,0" VerticalAlignment="Center">
+                            Margin="4,0,8,0" VerticalAlignment="Center">
                         <Button.Style>
                             <Style TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
                                 <Setter Property="Height" Value="20" />
@@ -303,7 +303,7 @@
                     <Grid>
                         <TextBlock x:Name="ExtensionsHint" Style="{StaticResource Hint}" Visibility="Collapsed" />
                         <DockPanel x:Name="ExtensionsList">
-                            <!-- 表头列宽和下面每行保持一致；最右一列让出滚动条的宽度 -->
+                            <!-- 表头列宽和下面每行保持一致；最右一列让出滚动条的宽度，和主题里的 ScrollBarSize 一致 -->
                             <Border DockPanel.Dock="Top" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1">
                                 <Grid TextElement.FontSize="12" TextElement.Foreground="{StaticResource Text2}">
                                     <Grid.ColumnDefinitions>
@@ -312,7 +312,7 @@
                                         <ColumnDefinition Width="64" />
                                         <ColumnDefinition Width="80" />
                                         <ColumnDefinition Width="112" />
-                                        <ColumnDefinition Width="{x:Static SystemParameters.VerticalScrollBarWidth}" />
+                                        <ColumnDefinition Width="8" />
                                     </Grid.ColumnDefinitions>
                                     <Border Padding="8,6">
                                         <DockPanel>
