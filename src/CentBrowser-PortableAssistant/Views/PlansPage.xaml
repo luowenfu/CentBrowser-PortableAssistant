@@ -192,7 +192,7 @@
                     </HeaderedContentControl.Header>
                     <DockPanel>
                         <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource Hint}" Margin="0,8,0,0"
-                                   Text="默认只勾最近一天用过的用户。点用户名，在右边单独设置它的内容和扩展" />
+                                   Text="默认只勾选最近用过的用户" />
                         <Grid>
                             <TextBlock x:Name="ProfilesHint" Style="{StaticResource Hint}" Visibility="Collapsed" />
                             <ListBox ItemsSource="{Binding Profiles}" SelectedItem="{Binding Current}" Style="{StaticResource PlainList}"
@@ -291,7 +291,7 @@
                 </HeaderedContentControl.Header>
                 <DockPanel>
                     <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource Hint}" Margin="0,8,0,0"
-                               Text="数据是扩展自己存的设置和内容，勾了才带走" />
+                               Text="数据是扩展的设置内容，勾了才带走" />
                     <Grid>
                         <TextBlock x:Name="ExtensionsHint" Style="{StaticResource Hint}" Visibility="Collapsed" />
                         <DockPanel x:Name="ExtensionsList">
