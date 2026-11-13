@@ -22,22 +22,30 @@ public sealed class TagPlane
     private readonly TextBlock _size;
     private readonly List<(DependencyObject Target, DependencyProperty Property, BindingBase Binding)> _held = [];
     private readonly Action _arrived;
-    private DateTime? _destinationStart;
-    private double _realUnit;
-    private double _shownUnit;
+    private double _real;
+    private double _shownProgress;
+    private int _stage;
+    private DateTime _stageStart;
+    private bool _started;
     private double _fromUnit;
     private double _trackTo = -1;
     private DateTime _glideFrom;
     private double _glideSeconds;
     private bool _awaitingEnd;
     private bool _rendering;
-    private bool _shown;
+    private bool _placed;
 
-    /// <summary>目的地这一段再快也要飞满这么久。本地文件夹常常一秒就复制完。</summary>
-    private const double DestinationSeconds = 1;
+    /// <summary>提取、打包、目的地，每一段再快也要飞满这么久。</summary>
+    private const double MinSeconds = 1;
 
     /// <summary>进度大约一秒才来一次。把这一跳摊开飞，避免一顿一顿。</summary>
     private const double SampleSeconds = 1;
+
+    /// <summary>这一段已经飞够一秒，最后一点不用再拖满。</summary>
+    private const double TailSeconds = 0.35;
+
+    /// <summary>0 提取起点，0.20 打包起点，0.70 目的地起点，1 终点。</summary>
+    private static readonly double[] Bounds = [0, 0.20, 0.70, 1];
 
     public TagPlane(
         Grid grid, Canvas layer, Image plane,
@@ -57,7 +65,7 @@ public sealed class TagPlane
         Holds = [planName, packedSize, files, destination, destinationText, problem, pack];
         grid.SizeChanged += (_, _) =>
         {
-            if (_destinationStart is not null) Move(0.70 + 0.30 * _shownUnit, animate: false);
+            if (_started) Move(_shownProgress, animate: false);
             else Place(App.Status.Flight, animate: false);
         };
     }
@@ -75,10 +83,10 @@ public sealed class TagPlane
         refreshNames?.Invoke();
         if (rawSize is not null) _size.Text = rawSize;
         Hold();
-        Place(App.Status.Flight, animate: false);
+        Place(App.Status.Flight is null ? null : 0d, animate: false);
     }
 
-    /// <summary>跟着进度放飞机。目的地飞完或这次没有上传段时，才解开定格并通知调用方。</summary>
+    /// <summary>跟着进度放飞机。三段都飞完，才解开定格并通知调用方。</summary>
     public void OnStatus()
     {
         var flight = App.Status.Flight;
@@ -86,13 +94,8 @@ public sealed class TagPlane
         {
             if (ShouldGlideOut())
             {
-                if (_destinationStart is null)
-                {
-                    _destinationStart = DateTime.UtcNow;
-                    _shownUnit = 0;
-                    _trackTo = -1;
-                }
-                _realUnit = 1;
+                EnsureStarted();
+                _real = 1;
                 _awaitingEnd = true;
                 StartGlide();
                 return;
@@ -100,17 +103,21 @@ public sealed class TagPlane
             Thaw();
             return;
         }
-        if (progress <= 0.70)
-        {
-            ClearDestination();
-            Place(progress, animate: true);
-            return;
-        }
-        var entered = _destinationStart is null;
-        _destinationStart ??= DateTime.UtcNow;
-        if (entered) _shownUnit = 0;
-        _realUnit = Math.Clamp((progress - 0.70) / 0.30, 0, 1);
+        EnsureStarted();
+        _real = Math.Clamp(progress, 0, 1);
         StartGlide();
+    }
+
+    /// <summary>从提取起点开始计时。已经在飞就不动。</summary>
+    private void EnsureStarted()
+    {
+        if (_started) return;
+        _started = true;
+        _shownProgress = 0;
+        _stage = 0;
+        _stageStart = DateTime.UtcNow;
+        _trackTo = -1;
+        _real = 0;
     }
 
     private void Hold()
@@ -156,13 +163,13 @@ public sealed class TagPlane
     }
 
     /// <summary>
-    /// 本地文件夹常常一秒传完，完成通知先到，界面还没看见上传进度。
-    /// 这种时候先把目的地飞完，再刷新行李牌。
+    /// 某一段常常不到一秒就做完，完成通知先到，飞机还没飞完。
+    /// 这种时候按段飞完再刷新行李牌。出错和取消不等。
     /// </summary>
     private bool ShouldGlideOut()
     {
         if (App.Status.IsError || App.Status.Text == "已取消") return false;
-        if (_destinationStart is not null) return _shownUnit < 0.999;
+        if (_started && _shownProgress < 0.999) return true;
         if (!Frozen) return false;
         var text = App.Status.Text;
         return text.Contains("已送达", StringComparison.Ordinal) || text.Contains("备份完成", StringComparison.Ordinal);
@@ -182,30 +189,43 @@ public sealed class TagPlane
         CompositionTarget.Rendering -= OnGlide;
     }
 
-    /// <summary>按帧往前飞。新进度摊到大约一秒里，整段再快也不少于一秒。</summary>
+    /// <summary>按帧往前飞。每一段再快也不少于一秒，新进度摊到大约一秒里。</summary>
     private void OnGlide(object? sender, EventArgs e)
     {
-        if (_destinationStart is not { } start)
+        if (!_started)
         {
             StopGlide();
             return;
         }
-        var goal = Math.Clamp(_realUnit, 0, 1);
+        var start = Bounds[_stage];
+        var end = Bounds[_stage + 1];
+        var width = end - start;
+        var goal = Math.Clamp((_real - start) / width, 0, 1);
+        var shownUnit = Math.Clamp((_shownProgress - start) / width, 0, 1);
         if (Math.Abs(goal - _trackTo) > 1e-4)
         {
-            _fromUnit = _shownUnit;
+            _fromUnit = shownUnit;
             _trackTo = goal;
             _glideFrom = DateTime.UtcNow;
-            var elapsed = (_glideFrom - start).TotalSeconds;
+            var elapsed = (_glideFrom - _stageStart).TotalSeconds;
             var span = Math.Max(0, goal - _fromUnit);
             _glideSeconds = goal >= 1
-                ? Math.Max(DestinationSeconds - elapsed, 0.35)
-                : Math.Max(SampleSeconds, span * DestinationSeconds);
+                ? Math.Max(MinSeconds - elapsed, TailSeconds)
+                : Math.Max(SampleSeconds, span * MinSeconds);
         }
         var t = _glideSeconds <= 0 ? 1 : (DateTime.UtcNow - _glideFrom).TotalSeconds / _glideSeconds;
-        _shownUnit = t >= 1 ? _trackTo : _fromUnit + (_trackTo - _fromUnit) * t;
-        Move(0.70 + 0.30 * _shownUnit, animate: false);
-        if (_awaitingEnd && _shownUnit >= 0.999) Thaw();
+        var unit = t >= 1 ? _trackTo : _fromUnit + (_trackTo - _fromUnit) * t;
+        _shownProgress = start + width * unit;
+        Move(_shownProgress, animate: false);
+        if (_stage < 2 && unit >= 0.999 && _real >= end - 1e-9)
+        {
+            _stage++;
+            _stageStart = DateTime.UtcNow;
+            _trackTo = -1;
+            _shownProgress = Bounds[_stage];
+            return;
+        }
+        if (_awaitingEnd && _stage == 2 && unit >= 0.999) Thaw();
     }
 
     private void Place(double? progress, bool animate)
@@ -227,11 +247,11 @@ public sealed class TagPlane
         _layer.Clip = new RectangleGeometry(new Rect(x0, top - 8, x3 - x0, Math.Max(_layer.ActualHeight, _grid.ActualHeight) - top + _plane.Height + 16));
         Canvas.SetTop(_plane, top);
         _plane.Visibility = Visibility.Visible;
-        if (!animate || !_shown)
+        if (!animate || !_placed)
         {
             _plane.BeginAnimation(Canvas.LeftProperty, null);
             Canvas.SetLeft(_plane, left);
-            _shown = true;
+            _placed = true;
             return;
         }
         _plane.BeginAnimation(Canvas.LeftProperty, new DoubleAnimation(left, TimeSpan.FromMilliseconds(300))
@@ -250,9 +270,11 @@ public sealed class TagPlane
     private void ClearDestination()
     {
         StopGlide();
-        _destinationStart = null;
-        _realUnit = 0;
-        _shownUnit = 0;
+        _started = false;
+        _real = 0;
+        _shownProgress = 0;
+        _stage = 0;
+        _stageStart = default;
         _fromUnit = 0;
         _trackTo = -1;
         _awaitingEnd = false;
@@ -273,7 +295,7 @@ public sealed class TagPlane
         _plane.BeginAnimation(Canvas.LeftProperty, null);
         _plane.Visibility = Visibility.Collapsed;
         _layer.Clip = null;
-        _shown = false;
+        _placed = false;
     }
 
     private bool TryBounds(out double x0, out double x1, out double x2, out double x3)
