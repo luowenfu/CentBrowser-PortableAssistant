@@ -26,6 +26,11 @@ public static class Fingerprint
 
         foreach (var item in items.Where(i => !i.IsProgram && i.Kind != CollectKind.PortableMarker).OrderBy(i => i.Dest, StringComparer.Ordinal))
         {
+            if (item.Kind is CollectKind.FirstRun or CollectKind.LastVersion)
+            {
+                sb.Append(item.Dest).Append('|').Append(item.Kind == CollectKind.LastVersion ? install.Version : "0").Append('\n');
+                continue;
+            }
             if (Directory.Exists(item.Source))
             {
                 foreach (var f in new DirectoryInfo(item.Source).EnumerateFiles("*", SearchOption.AllDirectories).OrderBy(f => f.FullName, StringComparer.Ordinal))

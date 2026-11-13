@@ -94,6 +94,9 @@ public sealed class CollectAndPackTests : IDisposable
         Assert.True(File.Exists(S("1.2.3.4/cbportable")));
         Assert.True(File.Exists(S("Dictionaries/en.bdic")));
         Assert.False(File.Exists(S("wipe.bat")));
+        Assert.True(File.Exists(S("User Data/First Run")));
+        Assert.Equal(0, new FileInfo(S("User Data/First Run")).Length);
+        Assert.Equal("1.2.3.4", File.ReadAllText(S("User Data/Last Version")));
         Assert.True(File.Exists(S("User Data/Profile 1/Bookmarks")));
         Assert.True(File.Exists(S("User Data/Profile 1/Google Profile Picture.png")));
         Assert.True(File.Exists(S("User Data/Profile 1/Accounts/Avatar Images/123")));
@@ -146,6 +149,8 @@ public sealed class CollectAndPackTests : IDisposable
         var without = CollectPlanner.Plan(_browser.Install, Plan(false), ["Profile 1"])
             .Select(i => i.Dest.Replace('\\', '/')).ToList();
 
+        Assert.Contains("CentBrowser/User Data/First Run", withData);
+        Assert.Contains("CentBrowser/User Data/Last Version", withData);
         Assert.Contains(withData, d => d.Contains("Extensions/aaaa"));
         Assert.Contains(withData, d => d.Contains("Local Extension Settings/aaaa"));
         Assert.Contains(without, d => d.Contains("Extensions/aaaa"));

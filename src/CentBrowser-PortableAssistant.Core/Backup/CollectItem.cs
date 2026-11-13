@@ -10,6 +10,10 @@ public enum CollectKind
     Preferences,
     /// <summary>空的便携标记文件。</summary>
     PortableMarker,
+    /// <summary>空的 First Run，表示这套用户数据已经启动过。</summary>
+    FirstRun,
+    /// <summary>Last Version，写入打包时的浏览器版本。</summary>
+    LastVersion,
 }
 
 /// <summary>Source 是绝对路径（文件或目录），Dest 是相对打包根目录的路径。</summary>

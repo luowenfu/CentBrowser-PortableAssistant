@@ -29,6 +29,9 @@ public static class CollectPlanner
 
         var userData = Path.Combine(RootFolder, "User Data");
         items.Add(new CollectItem(Path.Combine(install.UserDataDir, "Local State"), Path.Combine(userData, "Local State"), CollectKind.LocalState));
+        // 缺了这两个文件，解压后第一次打开会进功能介绍页，而不是设好的起始页
+        items.Add(new CollectItem("", Path.Combine(userData, BrowserInstall.FirstRunFile), CollectKind.FirstRun));
+        items.Add(new CollectItem("", Path.Combine(userData, BrowserInstall.LastVersionFile), CollectKind.LastVersion));
 
         foreach (var dir in profiles)
         {

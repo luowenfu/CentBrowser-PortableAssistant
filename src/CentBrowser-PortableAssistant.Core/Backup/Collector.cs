@@ -28,7 +28,11 @@ public static class Collector
             switch (item.Kind)
             {
                 case CollectKind.PortableMarker:
+                case CollectKind.FirstRun:
                     File.WriteAllBytes(dest, []);
+                    break;
+                case CollectKind.LastVersion:
+                    File.WriteAllText(dest, install.Version);
                     break;
                 case CollectKind.LocalState:
                     WriteJson(item.Source, dest, n => JsonTrimmer.TrimLocalState(n, profiles));
