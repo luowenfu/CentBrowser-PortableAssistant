@@ -35,13 +35,13 @@ public sealed class TagPlane
     private bool _rendering;
     private bool _placed;
 
-    /// <summary>提取、打包、目的地，每一段再快也要飞满这么久。</summary>
-    private const double MinSeconds = 1;
+    /// <summary>提取、打包再快也要飞满这么久。</summary>
+    private const double ShortSeconds = 0.5;
 
-    /// <summary>进度大约一秒才来一次。把这一跳摊开飞，避免一顿一顿。</summary>
-    private const double SampleSeconds = 1;
+    /// <summary>目的地再快也要飞满这么久。</summary>
+    private const double DestinationSeconds = 1;
 
-    /// <summary>这一段已经飞够一秒，最后一点不用再拖满。</summary>
+    /// <summary>这一段已经飞够最短时间，最后一点不用再拖满。</summary>
     private const double TailSeconds = 0.35;
 
     /// <summary>0 提取起点，0.20 打包起点，0.70 目的地起点，1 终点。</summary>
@@ -189,7 +189,7 @@ public sealed class TagPlane
         CompositionTarget.Rendering -= OnGlide;
     }
 
-    /// <summary>按帧往前飞。每一段再快也不少于一秒，新进度摊到大约一秒里。</summary>
+    /// <summary>按帧往前飞。提取和打包再快也不少于半秒，目的地不少于一秒。</summary>
     private void OnGlide(object? sender, EventArgs e)
     {
         if (!_started)
@@ -209,9 +209,10 @@ public sealed class TagPlane
             _glideFrom = DateTime.UtcNow;
             var elapsed = (_glideFrom - _stageStart).TotalSeconds;
             var span = Math.Max(0, goal - _fromUnit);
+            var least = _stage == 2 ? DestinationSeconds : ShortSeconds;
             _glideSeconds = goal >= 1
-                ? Math.Max(MinSeconds - elapsed, TailSeconds)
-                : Math.Max(SampleSeconds, span * MinSeconds);
+                ? Math.Max(least - elapsed, TailSeconds)
+                : Math.Max(least, span * least);
         }
         var t = _glideSeconds <= 0 ? 1 : (DateTime.UtcNow - _glideFrom).TotalSeconds / _glideSeconds;
         var unit = t >= 1 ? _trackTo : _fromUnit + (_trackTo - _fromUnit) * t;
