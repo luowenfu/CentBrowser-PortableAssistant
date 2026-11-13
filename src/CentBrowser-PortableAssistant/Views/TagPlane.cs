@@ -5,6 +5,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using CentBrowser_PortableAssistant.Core.Backup;
 
 namespace CentBrowser_PortableAssistant.Views;
@@ -21,13 +22,23 @@ public sealed class TagPlane
     private readonly Button _backup;
     private readonly TextBlock _size;
     private readonly List<(DependencyObject Target, DependencyProperty Property, BindingBase Binding)> _held = [];
+    private readonly Action _arrived;
+    private readonly DispatcherTimer _pace;
+    private DateTime? _destinationStart;
+    private double _realUnit;
+    private bool _awaitingEnd;
+    private bool _coasting;
+    private int _coast;
     private bool _shown;
+
+    /// <summary>目的地这一段再快也要飞满这么久。本地文件夹常常一秒就复制完。</summary>
+    private const double DestinationSeconds = 2;
 
     public TagPlane(
         Grid grid, Canvas layer, Image plane,
         Line start, Line extract, Line pack, Button backup, TextBlock size,
         TextBlock planName, TextBlock packedSize, ItemsControl files,
-        StackPanel destination, TextBlock destinationText, TextBlock problem)
+        StackPanel destination, TextBlock destinationText, TextBlock problem, Action arrived)
     {
         _grid = grid;
         _layer = layer;
@@ -37,8 +48,16 @@ public sealed class TagPlane
         _pack = pack;
         _backup = backup;
         _size = size;
+        _arrived = arrived;
         Holds = [planName, packedSize, files, destination, destinationText, problem, pack];
-        grid.SizeChanged += (_, _) => Place(animate: false);
+        _pace = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(16) };
+        _pace.Tick += (_, _) => OnPace();
+        grid.SizeChanged += (_, _) =>
+        {
+            if (_coasting || (_destinationStart is not null && _realUnit >= 1)) BeginCoast();
+            else if (_destinationStart is not null) DrawDestination();
+            else Place(App.Status.Flight, animate: false);
+        };
     }
 
     /// <summary>要断开绑定的控件。虚线用可见性，其余用各自的文字或列表。</summary>
@@ -49,24 +68,47 @@ public sealed class TagPlane
     /// <summary>先放开上一次定格，刷新文件名，再按牌上现在的字定格。</summary>
     public void Retake(Action? refreshNames, string? rawSize)
     {
+        ClearDestination();
         if (Frozen) Release();
         refreshNames?.Invoke();
         if (rawSize is not null) _size.Text = rawSize;
         Hold();
-        Place(animate: false);
+        Place(App.Status.Flight, animate: false);
     }
 
-    /// <summary>进度没了就解开定格。返回值表示这次解开了，调用方再去估算大小。</summary>
-    public bool OnStatus()
+    /// <summary>跟着进度放飞机。目的地飞完或这次没有上传段时，才解开定格并通知调用方。</summary>
+    public void OnStatus()
     {
-        var thawed = false;
-        if (App.Status.Flight is null && Frozen)
+        var flight = App.Status.Flight;
+        if (flight is not double progress)
         {
-            Release();
-            thawed = true;
+            if (_destinationStart is not null && !App.Status.IsError)
+            {
+                _realUnit = 1;
+                _awaitingEnd = true;
+                if (!_coasting) BeginCoast();
+                return;
+            }
+            Thaw();
+            return;
         }
-        Place(animate: true);
-        return thawed;
+        if (progress <= 0.70)
+        {
+            ClearDestination();
+            Place(progress, animate: true);
+            return;
+        }
+        _destinationStart ??= DateTime.UtcNow;
+        _realUnit = Math.Clamp((progress - 0.70) / 0.30, 0, 1);
+        if (_coasting) return;
+        if (_realUnit >= 1)
+        {
+            BeginCoast();
+            return;
+        }
+        DrawDestination();
+        if (VisualUnit() + 1e-4 < _realUnit) StartPace();
+        else StopPace();
     }
 
     private void Hold()
@@ -111,17 +153,85 @@ public sealed class TagPlane
         Frozen = false;
     }
 
-    private void Place(bool animate)
+    /// <summary>真实进度和已用时间里取更慢的那个。时间按整段两秒匀速。</summary>
+    private double VisualUnit()
     {
-        var flight = App.Status.Flight;
-        var imageWidth = ImageWidth();
-        if (flight is not double progress || imageWidth <= 0 || !TryBounds(out var x0, out var x1, out var x2, out var x3))
+        if (_destinationStart is not { } start) return 0;
+        var paced = (DateTime.UtcNow - start).TotalSeconds / DestinationSeconds;
+        return Math.Min(_realUnit, paced);
+    }
+
+    private void OnPace()
+    {
+        if (_coasting || _destinationStart is null)
         {
-            if (flight is null) Hide();
+            StopPace();
             return;
         }
-        var nose = FlightProgress.Nose(progress, x0, x1, x2, x3);
-        var left = nose - imageWidth;
+        if (_realUnit >= 1)
+        {
+            BeginCoast();
+            return;
+        }
+        DrawDestination();
+        if (VisualUnit() + 1e-4 >= _realUnit) StopPace();
+    }
+
+    /// <summary>进度已经到头时，用剩下的时间匀速滑到终点。不满两秒就补满。</summary>
+    private void BeginCoast()
+    {
+        if (_destinationStart is not { } start) return;
+        var imageWidth = ImageWidth();
+        if (imageWidth <= 0 || !TryBounds(out var x0, out var x1, out var x2, out var x3)) return;
+        StopPace();
+        var remain = DestinationSeconds - (DateTime.UtcNow - start).TotalSeconds;
+        var id = ++_coast;
+        if (remain <= 0.03)
+        {
+            _coasting = false;
+            Move(1, animate: false);
+            if (_awaitingEnd) Thaw();
+            return;
+        }
+        var shown = 0.70 + 0.30 * VisualUnit();
+        var from = FlightProgress.Nose(shown, x0, x1, x2, x3) - imageWidth;
+        Move(shown, animate: false);
+        _coasting = true;
+        var animation = new DoubleAnimation(from, x3 - imageWidth, TimeSpan.FromSeconds(remain))
+        {
+            FillBehavior = FillBehavior.HoldEnd,
+        };
+        animation.Completed += (_, _) =>
+        {
+            if (id != _coast) return;
+            _coasting = false;
+            if (_awaitingEnd) Thaw();
+        };
+        _plane.BeginAnimation(Canvas.LeftProperty, animation);
+    }
+
+    private void DrawDestination()
+    {
+        if (_destinationStart is null) return;
+        var shown = 0.70 + 0.30 * VisualUnit();
+        Move(shown, animate: false);
+    }
+
+    private void Place(double? progress, bool animate)
+    {
+        if (progress is not double value)
+        {
+            Hide();
+            return;
+        }
+        Move(value, animate);
+    }
+
+    private void Move(double progress, bool animate)
+    {
+        var imageWidth = ImageWidth();
+        if (imageWidth <= 0 || !TryBounds(out var x0, out var x1, out var x2, out var x3)) return;
+        var left = FlightProgress.Nose(progress, x0, x1, x2, x3) - imageWidth;
         _layer.Clip = new RectangleGeometry(new Rect(x0, 0, x3 - x0, Math.Max(_layer.ActualHeight, _grid.ActualHeight)));
         Canvas.SetTop(_plane, Math.Max(0, (_grid.ActualHeight - _plane.Height) / 2));
         _plane.Visibility = Visibility.Visible;
@@ -136,6 +246,36 @@ public sealed class TagPlane
         {
             EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut },
         });
+    }
+
+    private void StartPace()
+    {
+        if (!_pace.IsEnabled) _pace.Start();
+    }
+
+    private void StopPace()
+    {
+        if (_pace.IsEnabled) _pace.Stop();
+    }
+
+    private void ClearDestination()
+    {
+        _coast++;
+        _coasting = false;
+        StopPace();
+        _destinationStart = null;
+        _realUnit = 0;
+        _awaitingEnd = false;
+    }
+
+    /// <summary>飞机停了，牌上的字恢复绑定。大小交给调用方重新估算。</summary>
+    private void Thaw()
+    {
+        ClearDestination();
+        var thaw = Frozen;
+        if (thaw) Release();
+        Hide();
+        if (thaw) _arrived();
     }
 
     private void Hide()

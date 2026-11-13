@@ -65,7 +65,7 @@ public partial class PlansPage : UserControl
     {
         InitializeComponent();
         _tag = new TagPlane(TagGrid, PlaneLayer, Plane, StartLine, ExtractLine, PackLine, BackupButton, SizeText,
-            PlanNameText, PackedSizeText, FileList, DestinationPanel, DestinationText, ProblemText);
+            PlanNameText, PackedSizeText, FileList, DestinationPanel, DestinationText, ProblemText, OnPlaneArrived);
         foreach (var v in NameTemplate.Variables)
         {
             var key = new Button { Content = v, Style = (Style)FindResource("Keycap") };
@@ -87,7 +87,7 @@ public partial class PlansPage : UserControl
         });
         App.Status.Changed += () => Dispatcher.BeginInvoke(() =>
         {
-            if (_tag.OnStatus()) _ = EstimateSizeAsync();
+            _tag.OnStatus();
             UpdateBackupButton();
         });
         App.Backup.BusyChanged += () => Dispatcher.BeginInvoke(UpdateBackupButton);
@@ -400,9 +400,16 @@ public partial class PlansPage : UserControl
         LoadPlans(null);
     }
 
+    /// <summary>飞完目的地才解开定格。本地复制往往先结束，飞机还要滑完剩下的时间。</summary>
+    private void OnPlaneArrived()
+    {
+        UpdateBackupButton();
+        _ = EstimateSizeAsync();
+    }
+
     /// <summary>飞行中按钮保持不可按。上传阶段提取和打包已经结束，单看 IsBusy 会把它放开。</summary>
     private void UpdateBackupButton() =>
-        BackupButton.IsEnabled = !App.Backup.IsBusy && App.Status.Flight is null;
+        BackupButton.IsEnabled = !App.Backup.IsBusy && App.Status.Flight is null && !_tag.Frozen;
 
     /// <summary>按当前勾选估算未提取大小，后台算，只保留最后一次请求的结果。飞行中不改牌上的字。</summary>
     private async Task EstimateSizeAsync()
