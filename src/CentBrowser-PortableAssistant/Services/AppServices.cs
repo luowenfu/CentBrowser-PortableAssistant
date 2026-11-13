@@ -53,27 +53,21 @@ public sealed class AppServices : IDisposable
     /// <summary>浏览器可能升级或挪了位置，重新识别。</summary>
     public void RefreshInstalls() => _installs.Clear();
 
-    /// <summary>重置：删掉设置、备份记录和还没传完的文件，回到默认。7-Zip 留着。</summary>
+    /// <summary>重置：删掉设置和还没传完的文件，回到默认。备份记录和 7-Zip 留着。</summary>
     public void Reset()
     {
         AutoStart.Set(false);
         DeleteDir(AppPaths.PendingDir);
         DeleteDir(AppPaths.StagingDir);
         DeleteFile(AppPaths.ConfigFile);
-        History.Update(h =>
-        {
-            h.Plans.Clear();
-            h.Records.Clear();
-            h.Abandoned.Clear();
-        });
-        DeleteFile(AppPaths.HistoryFile);
+        History.Update(h => h.Plans.Clear());
         Config = ConfigStore.Load();
         Changes.Invalidate();
         RefreshInstalls();
         ConfigChanged?.Invoke();
     }
 
-    /// <summary>卸载：重置要删的之外，再删掉释放的 7-Zip。调用前先丢掉上传队列。</summary>
+    /// <summary>卸载：重置要删的之外，再删掉备份记录和释放的 7-Zip。调用前先丢掉上传队列。</summary>
     public void Uninstall()
     {
         AutoStart.Set(false);

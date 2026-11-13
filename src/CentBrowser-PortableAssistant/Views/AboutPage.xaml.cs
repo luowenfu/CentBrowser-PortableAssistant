@@ -80,12 +80,12 @@ public partial class AboutPage : UserControl
         if (uninstall)
         {
             MessageDialog.Inform(owner, "卸载", "已清理完毕",
-                "设置、备份记录、待上传文件和开机启动都已删除。最后删掉本程序的 exe 就卸载完了", okText: "退出");
+                "设置、备份记录、待上传文件、开机启动和本机上释放的工具文件都已删除。最后删掉本程序的 exe 就卸载完了", okText: "退出");
             ((App)Application.Current).ExitNow();
             return;
         }
 
         MessageDialog.Inform(owner, "重置", "已回到刚开始用的状态",
-            "设置、备份记录和还没传完的文件都已删除");
+            "设置和还没传完的文件都已删除。备份记录保留");
     }
 }

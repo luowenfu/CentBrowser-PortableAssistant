@@ -8,14 +8,14 @@
         <RadioButton x:Name="ResetOption" GroupName="r" IsChecked="True" Checked="OnOptionChanged">
             <StackPanel>
                 <TextBlock Text="重置" />
-                <TextBlock Style="{StaticResource Hint}" Margin="0,2,0,0" Text="删除设置、备份记录和还没传完的文件，回到刚开始用的状态" />
+                <TextBlock Style="{StaticResource Hint}" Margin="0,2,0,0" Text="删除设置和还没传完的文件，回到刚开始用的状态。备份记录保留" />
             </StackPanel>
         </RadioButton>
         <RadioButton x:Name="UninstallOption" GroupName="r" Margin="0,16,0,0" Checked="OnOptionChanged">
             <StackPanel>
                 <TextBlock Text="卸载" />
                 <TextBlock Style="{StaticResource Hint}" Margin="0,2,0,0"
-                           Text="再删掉本机上释放的工具文件，然后退出。之后删掉本程序就行" />
+                           Text="再删掉备份记录和本机上释放的工具文件，然后退出。之后删掉本程序就行" />
             </StackPanel>
         </RadioButton>
         <TextBlock Style="{StaticResource Hint}" Margin="0,20,0,0" Text="目的地里已有的备份不会被删除" />
