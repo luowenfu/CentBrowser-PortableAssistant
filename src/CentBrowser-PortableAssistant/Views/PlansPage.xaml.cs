@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -177,7 +176,6 @@ public partial class PlansPage : UserControl
         PasswordInput.Password = _editor.Password;
         UpdateHints();
         _ = EstimateSizeAsync();
-        _ = ShowProgramSizeAsync();
     }
 
     private void UpdateHints()
@@ -407,18 +405,5 @@ public partial class PlansPage : UserControl
         if (request != _sizeRequest) return;
         SizeText.Text = Format.Size(size);
         editor.RawSize = size;
-    }
-
-    private async Task ShowProgramSizeAsync()
-    {
-        if (_editor?.Install is not { } install)
-        {
-            ProgramHint.Text = "勾上后，换台电脑解压就能用";
-            return;
-        }
-        var size = await Task.Run(() =>
-            ProfilePaths.SizeOf(install.VersionDir) +
-            Directory.GetFiles(install.RootDir).Sum(f => new FileInfo(f).Length));
-        ProgramHint.Text = $"约 {Format.Size(size)}。勾上后，换台电脑解压就能用";
     }
 }
