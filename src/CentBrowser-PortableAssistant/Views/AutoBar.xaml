@@ -36,7 +36,7 @@
 
         <!-- 备份状态，在剩下的空当里居中。外层拉满，文字才不会盖住两边 -->
         <Grid>
-            <TextBlock x:Name="StatusText" HorizontalAlignment="Stretch" VerticalAlignment="Center" TextAlignment="Center"
+            <TextBlock x:Name="StatusText" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center"
                        TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxHeight="40" Margin="16,6"
                        Foreground="{StaticResource Text2}" />
         </Grid>

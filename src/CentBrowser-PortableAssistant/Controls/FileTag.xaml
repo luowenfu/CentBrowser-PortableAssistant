@@ -18,7 +18,8 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <TextBlock Text="{Binding Text, ElementName=Root}" FontFamily="{StaticResource MonoFont}" FontSize="12"
-                           Foreground="{StaticResource Text}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                           Foreground="{StaticResource Text}" HorizontalAlignment="Left" VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis" ToolTip="{Binding Text, ElementName=Root}" />
                 <TextBlock Grid.Column="1" Text="{Binding Size, ElementName=Root}" Margin="8,0,0,0"
                            FontFamily="{StaticResource MonoFont}" FontSize="12" Foreground="{StaticResource Muted}"
                            VerticalAlignment="Center">

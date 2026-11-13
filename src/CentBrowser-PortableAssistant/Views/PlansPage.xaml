@@ -28,7 +28,8 @@
                     </Button>
                     <TextBlock DockPanel.Dock="Right" Text="{Binding Detail}" Style="{StaticResource Mono}"
                                Margin="8,0,0,0" VerticalAlignment="Center" ToolTip="{Binding Tip}" />
-                    <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Title}" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Title}"
+                               HorizontalAlignment="Left" VerticalAlignment="Center" />
                 </DockPanel>
             </CheckBox>
         </DataTemplate>
@@ -126,7 +127,6 @@
                     <Style TargetType="ListBoxItem" BasedOn="{StaticResource NavItem}">
                         <Setter Property="Height" Value="32" />
                         <Setter Property="Margin" Value="0,0,4,0" />
-                        <Setter Property="ToolTip" Value="双击修改名称，右键更多" />
                     </Style>
                 </ListBox.ItemContainerStyle>
                 <ListBox.ContextMenu>
@@ -140,8 +140,17 @@
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <Grid>
-                            <TextBlock x:Name="Label" Text="{Binding Name}" MaxWidth="120"
-                                       TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}" />
+                            <TextBlock x:Name="Label" Text="{Binding Name}" MaxWidth="120" HorizontalAlignment="Left"
+                                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis">
+                                <TextBlock.ToolTip>
+                                    <ToolTip DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Name}" />
+                                            <TextBlock Text="双击修改名称，右键更多" Margin="0,4,0,0" />
+                                        </StackPanel>
+                                    </ToolTip>
+                                </TextBlock.ToolTip>
+                            </TextBlock>
                             <TextBox x:Name="RenameBox" Visibility="Collapsed" MinWidth="120" MaxWidth="240" Height="26" Margin="-8,0"
                                      Text="{Binding DataContext.Name, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
                                      KeyDown="OnRenameKey" LostKeyboardFocus="OnRenameLostFocus" />
@@ -216,13 +225,14 @@
                                                 <DockPanel>
                                                     <TextBlock DockPanel.Dock="Right" Text="{Binding Key}" Style="{StaticResource Mono}" Margin="8,0,0,0"
                                                                VerticalAlignment="Center" />
-                                                    <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis" ToolTip="{Binding FullTitle}" />
+                                                    <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis" ToolTip="{Binding FullTitle}"
+                                                               HorizontalAlignment="Left" />
                                                 </DockPanel>
                                                 <DockPanel Margin="0,2,0,0">
                                                     <TextBlock DockPanel.Dock="Right" Text="{Binding LastUsed}" Style="{StaticResource Hint}" Margin="8,0,0,0"
                                                                TextWrapping="NoWrap" />
                                                     <TextBlock Text="{Binding Email}" Style="{StaticResource Hint}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap"
-                                                               ToolTip="{Binding FullTitle}" />
+                                                               ToolTip="{Binding FullTitle}" HorizontalAlignment="Left" />
                                                 </DockPanel>
                                             </StackPanel>
                                         </DockPanel>
@@ -356,7 +366,7 @@
                                                         <DockPanel>
                                                             <CheckBox DockPanel.Dock="Left" IsChecked="{Binding IsChecked}" VerticalAlignment="Center" />
                                                             <TextBlock x:Name="N" Text="{Binding Name}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Id}"
-                                                                       VerticalAlignment="Center" />
+                                                                       HorizontalAlignment="Left" VerticalAlignment="Center" />
                                                         </DockPanel>
                                                     </Border>
                                                     <Border Grid.Column="1" Padding="8,7">
@@ -501,7 +511,7 @@
                             </StackPanel>
                         </Grid>
                         <CheckBox IsChecked="{Binding AsciiFileName}" Margin="0,12,0,0" Content="文件名只用英文" FontSize="12"
-                                  ToolTip="兼容不支持中文文件名的老 FTP" />
+                                  HorizontalAlignment="Left" ToolTip="兼容不支持中文文件名的老 FTP" />
                     </StackPanel>
                 </ScrollViewer>
             </HeaderedContentControl>
@@ -560,7 +570,7 @@
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                         <TextBlock Text="方案" Style="{StaticResource TagLabel}" />
                         <TextBlock x:Name="PlanNameText" Text="{Binding Name}" FontSize="18" Foreground="{StaticResource Text}" TextTrimming="CharacterEllipsis" MaxWidth="200"
-                                   ToolTip="{Binding Name}" />
+                                   HorizontalAlignment="Left" ToolTip="{Binding Name}" />
                     </StackPanel>
                     <Line x:Name="StartLine" Grid.Column="2" Style="{StaticResource Perforation}" />
                     <!-- 两个大小并排，共用一段 -->
@@ -569,9 +579,11 @@
                             <TextBlock Text="未提取" Style="{StaticResource TagLabel}" />
                             <TextBlock x:Name="SizeText" Text="…" FontWeight="Normal" Foreground="{StaticResource Text}" Margin="0,3,0,0" />
                         </StackPanel>
-                        <StackPanel Margin="20,0,0,0" ToolTip="按当前打包格式和上次备份的压缩比估算">
-                            <TextBlock Text="提取后" Style="{StaticResource TagLabel}" />
-                            <TextBlock x:Name="PackedSizeText" Text="{Binding PackedSize}" FontWeight="Normal" Foreground="{StaticResource Text}" Margin="0,3,0,0" />
+                        <StackPanel Margin="20,0,0,0">
+                            <TextBlock Text="提取后" Style="{StaticResource TagLabel}" HorizontalAlignment="Left"
+                                       ToolTip="按当前打包格式和上次备份的压缩比估算" />
+                            <TextBlock x:Name="PackedSizeText" Text="{Binding PackedSize}" FontWeight="Normal" Foreground="{StaticResource Text}" Margin="0,3,0,0"
+                                       HorizontalAlignment="Left" ToolTip="按当前打包格式和上次备份的压缩比估算" />
                         </StackPanel>
                     </StackPanel>
                     <Line x:Name="ExtractLine" Grid.Column="4" Style="{StaticResource Perforation}" />
@@ -606,7 +618,7 @@
                                 Visibility="{Binding ShowDestination, Converter={StaticResource Vis}}">
                         <TextBlock Text="目的地" Style="{StaticResource TagLabel}" />
                         <TextBlock x:Name="DestinationText" Text="{Binding Destinations}" Foreground="{StaticResource Text}" Margin="0,3,0,0" TextTrimming="CharacterEllipsis"
-                                   ToolTip="{Binding DestinationsDetail}">
+                                   HorizontalAlignment="Left" ToolTip="{Binding DestinationsDetail}">
                             <TextBlock.MaxWidth>
                                 <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=StackPanel}"
                                          Converter="{StaticResource PositiveWidth}" />
