@@ -1,0 +1,2 @@
+7z.sfx 是 7-Zip 25.01 官方 7z.sfx 的修改版：只把对话框和提示文字翻译成了中文，程序代码未改动。
+7z.exe、7z.dll 为官方原版。7-Zip 源码见 https://www.7-zip.org/ ，授权见 License.txt。

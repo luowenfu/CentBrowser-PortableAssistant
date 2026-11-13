@@ -1,0 +1,62 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- 中性灰，偏冷，贴近图标里 C 字中间的白。底色本身不带蓝 -->
+    <Color x:Key="BgColor">#F4F6F8</Color>
+    <Color x:Key="SurfaceColor">#FFFFFF</Color>
+    <Color x:Key="SurfaceStepColor">#E7ECF1</Color>
+    <Color x:Key="StepHeadColor">#F7F8FA</Color>
+    <Color x:Key="HoverColor">#EEF2F6</Color>
+    <Color x:Key="BorderColor">#E0E5EB</Color>
+    <Color x:Key="BorderStrongColor">#CCD3DB</Color>
+    <Color x:Key="TextColor">#1A2332</Color>
+    <Color x:Key="Text2Color">#4A5568</Color>
+    <Color x:Key="MutedColor">#5C6876</Color>
+
+    <!-- 强调色：C 字环。原色 #4184F3 配白字只有 3.6:1，压到同一色相的 #1E6AD6，约 5.1:1 -->
+    <Color x:Key="AccentColor">#1E6AD6</Color>
+    <Color x:Key="AccentHoverColor">#1857B8</Color>
+    <Color x:Key="AccentPressColor">#144A9E</Color>
+
+    <!-- 底部行李牌和文件名小标签是同一套蓝掺大量白。穿绳孔用页面底色，边是按钮按下的那档蓝 -->
+    <Color x:Key="KraftColor">#FFA028</Color>
+    <Color x:Key="TagColor">#D6E4F8</Color>
+    <Color x:Key="KraftEdgeColor">#8C4A06</Color>
+    <Color x:Key="KraftInkColor">#3A2208</Color>
+    <Color x:Key="KraftInkSoftColor">#4E3010</Color>
+    <!-- 黄楔 #FABB04。铺在橙底上几乎看不见，只留在绳色上 -->
+    <Color x:Key="StringColor">#FABB04</Color>
+
+    <Color x:Key="SuccessColor">#2E7A4E</Color>
+    <!-- 深红：亮橙底上普通红字叠在一起，这档在白底和橙底上都过 4.5:1 -->
+    <Color x:Key="DangerColor">#8A100C</Color>
+    <Color x:Key="DangerHoverColor">#6E0C0A</Color>
+
+    <SolidColorBrush x:Key="Bg" Color="{StaticResource BgColor}" />
+    <SolidColorBrush x:Key="Surface" Color="{StaticResource SurfaceColor}" />
+    <SolidColorBrush x:Key="SurfaceStep" Color="{StaticResource SurfaceStepColor}" />
+    <SolidColorBrush x:Key="StepHead" Color="{StaticResource StepHeadColor}" />
+    <SolidColorBrush x:Key="Hover" Color="{StaticResource HoverColor}" />
+    <SolidColorBrush x:Key="Line" Color="{StaticResource BorderColor}" />
+    <SolidColorBrush x:Key="LineStrong" Color="{StaticResource BorderStrongColor}" />
+    <SolidColorBrush x:Key="Text" Color="{StaticResource TextColor}" />
+    <SolidColorBrush x:Key="Text2" Color="{StaticResource Text2Color}" />
+    <SolidColorBrush x:Key="Muted" Color="{StaticResource MutedColor}" />
+    <SolidColorBrush x:Key="Accent" Color="{StaticResource AccentColor}" />
+    <SolidColorBrush x:Key="AccentHover" Color="{StaticResource AccentHoverColor}" />
+    <SolidColorBrush x:Key="AccentPress" Color="{StaticResource AccentPressColor}" />
+    <SolidColorBrush x:Key="Kraft" Color="{StaticResource KraftColor}" />
+    <SolidColorBrush x:Key="Tag" Color="{StaticResource TagColor}" />
+    <SolidColorBrush x:Key="KraftEdge" Color="{StaticResource KraftEdgeColor}" />
+    <SolidColorBrush x:Key="KraftInk" Color="{StaticResource KraftInkColor}" />
+    <SolidColorBrush x:Key="KraftInkSoft" Color="{StaticResource KraftInkSoftColor}" />
+    <SolidColorBrush x:Key="StringBrush" Color="{StaticResource StringColor}" />
+    <SolidColorBrush x:Key="Success" Color="{StaticResource SuccessColor}" />
+    <SolidColorBrush x:Key="Danger" Color="{StaticResource DangerColor}" />
+    <SolidColorBrush x:Key="DangerHover" Color="{StaticResource DangerHoverColor}" />
+
+    <FontFamily x:Key="UiFont">Microsoft YaHei UI, Segoe UI</FontFamily>
+    <FontFamily x:Key="MonoFont">Cascadia Mono, Consolas, Microsoft YaHei UI</FontFamily>
+    <FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
+
+</ResourceDictionary>

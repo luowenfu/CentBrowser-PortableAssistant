@@ -1,0 +1,50 @@
+﻿<Window x:Class="CentBrowser_PortableAssistant.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:v="clr-namespace:CentBrowser_PortableAssistant.Views"
+        Title="Cent Browser 便携助手" Width="1400" Height="980" MinWidth="1180" MinHeight="680"
+        WindowStartupLocation="Manual" Background="{StaticResource Bg}"
+        FontFamily="{StaticResource UiFont}" FontSize="13" Foreground="{StaticResource Text}"
+        Icon="pack://application:,,,/Assets/app.ico" UseLayoutRounding="True"
+        TextOptions.TextFormattingMode="Display">
+    <DockPanel x:Name="Root">
+        <!-- 顶栏 -->
+        <Border DockPanel.Dock="Top" Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1">
+            <DockPanel Margin="20,0" Height="52">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Style="{StaticResource QuietButton}" Click="OnOpenTargets">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Icon}" Text="&#xE753;" FontSize="14" />
+                            <TextBlock Text="目的地设置" Margin="8,0,0,0" />
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource QuietButton}" Margin="4,0,0,0" Click="OnOpenAbout">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Icon}" Text="&#xE946;" FontSize="14" />
+                            <TextBlock Text="关于" Margin="8,0,0,0" />
+                        </StackPanel>
+                    </Button>
+                    <Grid x:Name="UpdateHost" Margin="4,0,0,0" Visibility="Collapsed" ClipToBounds="False">
+                        <Button Style="{StaticResource QuietButton}" Click="OnOpenUpdate">
+                            <TextBlock Text="新版本" />
+                        </Button>
+                        <Ellipse Width="8" Height="8" HorizontalAlignment="Right" VerticalAlignment="Top"
+                                 Margin="0,-2,-2,0" IsHitTestVisible="False" Stroke="White" StrokeThickness="1" Fill="#FF3B30" />
+                    </Grid>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Image Source="pack://application:,,,/Assets/app.png" Width="32" Height="32" RenderOptions.BitmapScalingMode="HighQuality" />
+                    <TextBlock Text="Cent Browser 便携助手" FontSize="15" Margin="10,0,0,0" VerticalAlignment="Center" />
+                    <TextBlock Text="带走浏览器，换台电脑解压就能用" Style="{StaticResource Hint}" Margin="16,0,0,0" VerticalAlignment="Center" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- 底栏 -->
+        <Border DockPanel.Dock="Bottom" Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0">
+            <v:AutoBar x:Name="Bar" />
+        </Border>
+
+        <v:PlansPage x:Name="Plans" />
+    </DockPanel>
+</Window>

@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{853F92CF-FF3E-40C4-8324-01A0C9D29ABB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CentBrowser-PortableAssistant", "src\CentBrowser-PortableAssistant\CentBrowser-PortableAssistant.csproj", "{4AC1FF47-86D3-481F-9162-D71EF60DC7AA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CentBrowser-PortableAssistant.Core", "src\CentBrowser-PortableAssistant.Core\CentBrowser-PortableAssistant.Core.csproj", "{AA221900-F36E-4818-B8AF-50B38A380A71}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{A9AB9F66-81BF-4A27-93CA-71A477457A06}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CentBrowser-PortableAssistant.Tests", "tests\CentBrowser-PortableAssistant.Tests\CentBrowser-PortableAssistant.Tests.csproj", "{F105B6C7-771F-4E20-8206-97087FB4D67B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4AC1FF47-86D3-481F-9162-D71EF60DC7AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4AC1FF47-86D3-481F-9162-D71EF60DC7AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4AC1FF47-86D3-481F-9162-D71EF60DC7AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4AC1FF47-86D3-481F-9162-D71EF60DC7AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA221900-F36E-4818-B8AF-50B38A380A71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA221900-F36E-4818-B8AF-50B38A380A71}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA221900-F36E-4818-B8AF-50B38A380A71}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA221900-F36E-4818-B8AF-50B38A380A71}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F105B6C7-771F-4E20-8206-97087FB4D67B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F105B6C7-771F-4E20-8206-97087FB4D67B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F105B6C7-771F-4E20-8206-97087FB4D67B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F105B6C7-771F-4E20-8206-97087FB4D67B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4AC1FF47-86D3-481F-9162-D71EF60DC7AA} = {853F92CF-FF3E-40C4-8324-01A0C9D29ABB}
+		{AA221900-F36E-4818-B8AF-50B38A380A71} = {853F92CF-FF3E-40C4-8324-01A0C9D29ABB}
+		{F105B6C7-771F-4E20-8206-97087FB4D67B} = {A9AB9F66-81BF-4A27-93CA-71A477457A06}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <RootNamespace>CentBrowser_PortableAssistant.Core</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App" />
+    <PackageReference Include="FluentFTP" Version="55.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\third_party\7zip\7z.exe" LogicalName="7zip.7z.exe" />
+    <EmbeddedResource Include="..\..\third_party\7zip\7z.dll" LogicalName="7zip.7z.dll" />
+    <EmbeddedResource Include="..\..\third_party\7zip\7z.sfx" LogicalName="7zip.7z.sfx" />
+    <EmbeddedResource Include="..\..\third_party\7zip\License.txt" LogicalName="7zip.License.txt" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,47 @@
+# 默认不进 git。只放行能改能编的源码、编译配置、项目介绍和版本记录。
+
+*
+!/.gitignore
+!/.gitattributes
+!/README.md
+!/CHANGELOG.md
+!/build.ps1
+!/VERSION
+!/*.sln
+!/Directory.Build.props
+!/global.json
+!/src/
+!/src/**
+!/third_party/
+!/third_party/**
+!/tests/
+!/tests/**
+
+# 说明文档的截图放 assets/。设计原稿在 asset/，不进 git
+!/assets/
+!/assets/**
+
+# 源码目录里的编译缓存、编辑器垃圾和密钥仍然不进 git
+node_modules/
+.venv/
+venv/
+bin/
+obj/
+*.user
+*.suo
+*.cache
+
+.vs/
+.idea/
+.vscode/
+Thumbs.db
+.DS_Store
+
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.pfx
+*.snk
+appsettings.Local.json

@@ -1,0 +1,35 @@
+# 固定换行符，避免 Windows 上 CRLF/LF 混乱导致
+# git diff 显示整个文件都被改动
+
+* text=auto eol=lf
+
+# C# 生态在 Windows 上惯用 CRLF
+*.cs      text eol=crlf
+*.csproj  text eol=crlf
+*.sln     text eol=crlf
+*.props   text eol=crlf
+*.targets text eol=crlf
+*.xaml    text eol=crlf
+
+*.ps1  text eol=crlf
+*.psm1 text eol=crlf
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+
+*.sh text eol=lf
+
+# 二进制文件不做转换，也不在 diff 里展开
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.pdf  binary
+*.zip  binary
+*.exe  binary
+*.dll  binary
+*.pdb  binary
+*.snk  binary
+*.pfx  binary
+*.ttf  binary
+*.otf  binary

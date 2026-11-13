@@ -1,0 +1,24 @@
+<Project>
+
+  <!--
+    所有子项目（src/ 和 tests/ 下的全部 csproj）共享的 MSBuild 属性。
+    在这里改一次，全项目生效，不要在各个 csproj 里重复写。
+
+    注意这里故意不设 TargetFramework：WPF 和 WinForms 需要
+    net8.0-windows，控制台和类库用 net8.0，由各自的 csproj 决定。
+    SDK 大版本由根目录的 global.json 约束。
+  -->
+
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <!--
+    版本号由 build.ps1 通过 -p:Version= 注入，AssemblyVersion 和
+    FileVersion 会自动跟随，不要在任何 csproj 里写死 <Version>。
+  -->
+
+</Project>

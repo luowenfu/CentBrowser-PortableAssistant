@@ -1,0 +1,27 @@
+<UserControl x:Class="CentBrowser_PortableAssistant.Views.BrowserCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="Vis" />
+    </UserControl.Resources>
+    <!-- DataContext 是当前方案的 PlanEditor -->
+    <StackPanel>
+        <TextBlock Text="{Binding BrowserLabel}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+        <TextBlock Text="{Binding BrowserPath}" FontFamily="{StaticResource MonoFont}" FontSize="12" Foreground="{StaticResource Text2}"
+                   TextWrapping="Wrap" Margin="0,4,0,0" />
+        <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+            <Button Content="选择目录…" Click="OnPick" ToolTip="选 chrome.exe 所在的目录" />
+            <Button Style="{StaticResource QuietButton}" Content="改回自动识别" Margin="8,0,0,0" Click="OnAutoDetect"
+                    Visibility="{Binding IsManualBrowser, Converter={StaticResource Vis}}" />
+        </StackPanel>
+    </StackPanel>
+    <UserControl.Style>
+        <Style TargetType="UserControl">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding HasBrowser}" Value="False">
+                    <Setter Property="Foreground" Value="{StaticResource Danger}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Style>
+</UserControl>
