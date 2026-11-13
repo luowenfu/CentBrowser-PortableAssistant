@@ -10,7 +10,7 @@
     <DockPanel x:Name="Root">
         <!-- 顶栏 -->
         <Border DockPanel.Dock="Top" Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1">
-            <DockPanel Margin="20,0" Height="52">
+            <DockPanel Margin="20,0" Height="56">
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button Style="{StaticResource QuietButton}" Click="OnOpenTargets">
                         <StackPanel Orientation="Horizontal">
@@ -33,7 +33,7 @@
                     </Grid>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <Image Source="pack://application:,,,/Assets/app.png" Width="32" Height="32" RenderOptions.BitmapScalingMode="HighQuality" />
+                    <Image Source="pack://application:,,,/Assets/app.png" Width="40" Height="40" RenderOptions.BitmapScalingMode="HighQuality" />
                     <TextBlock Text="Cent Browser 便携助手" FontSize="15" Margin="10,0,0,0" VerticalAlignment="Center" />
                     <TextBlock Text="带走浏览器，换台电脑解压就能用" Style="{StaticResource Hint}" Margin="16,0,0,0" VerticalAlignment="Center" />
                 </StackPanel>
