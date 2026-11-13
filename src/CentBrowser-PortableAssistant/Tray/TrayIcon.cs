@@ -24,19 +24,15 @@ public sealed class TrayIcon : IDisposable
 {
     private readonly NotifyIcon _icon;
     private readonly ToolStripMenuItem _backupMenu;
-    private readonly ToolStripMenuItem _startItem;
-    private readonly ToolStripMenuItem _autoItem;
     private readonly Icon _base;
     private readonly Dictionary<TrayMark, Icon> _marks = new();
     private TrayMark _mark = TrayMark.None;
-    private bool _syncing;
 
     public event Action? OpenRequested;
     /// <summary>方案 id 为空表示全部。第二个参数为真表示快速。</summary>
     public event Action<string?, bool>? BackupRequested;
     public event Action? RetryRequested;
-    public event Action<bool>? StartToggled;
-    public event Action<bool>? AutoToggled;
+    public event Action? RecordsRequested;
     public event Action? ExitRequested;
     public event Action? Hovering;
 
@@ -50,28 +46,12 @@ public sealed class TrayIcon : IDisposable
         _icon = new NotifyIcon { Icon = _base, Text = App.TrayTitle(), Visible = true };
 
         _backupMenu = new ToolStripMenuItem("立即备份");
-        _startItem = new ToolStripMenuItem("开机启动");
-        _startItem.Click += (_, _) =>
-        {
-            if (_syncing) return;
-            _startItem.Checked = !_startItem.Checked;
-            StartToggled?.Invoke(_startItem.Checked);
-        };
-        _autoItem = new ToolStripMenuItem("自动备份");
-        _autoItem.Click += (_, _) =>
-        {
-            if (_syncing) return;
-            _autoItem.Checked = !_autoItem.Checked;
-            AutoToggled?.Invoke(_autoItem.Checked);
-        };
 
         var menu = new ContextMenuStrip { ShowImageMargin = true };
         menu.Items.Add("打开主界面", null, (_, _) => OpenRequested?.Invoke());
-        menu.Items.Add(_startItem);
         menu.Items.Add(_backupMenu);
         menu.Items.Add("立即重试上传", null, (_, _) => RetryRequested?.Invoke());
-        menu.Items.Add(new ToolStripSeparator());
-        menu.Items.Add(_autoItem);
+        menu.Items.Add("查询记录", null, (_, _) => RecordsRequested?.Invoke());
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add("退出", null, (_, _) => ExitRequested?.Invoke());
         _icon.ContextMenuStrip = menu;
@@ -98,22 +78,6 @@ public sealed class TrayIcon : IDisposable
         item.DropDownItems.Add("快速备份", null, (_, _) => BackupRequested?.Invoke(planId, true));
         item.DropDownItems.Add("慢速备份", null, (_, _) => BackupRequested?.Invoke(planId, false));
         return item;
-    }
-
-    public void SetStart(bool enabled)
-    {
-        _syncing = true;
-        _startItem.Checked = enabled;
-        _syncing = false;
-    }
-
-    /// <param name="available">没开开机启动时自动备份不可用，菜单项变灰。</param>
-    public void SetAuto(bool enabled, bool available)
-    {
-        _syncing = true;
-        _autoItem.Enabled = available;
-        _autoItem.Checked = available && enabled;
-        _syncing = false;
     }
 
     /// <summary>托盘悬停文字，最多 127 个字符。</summary>

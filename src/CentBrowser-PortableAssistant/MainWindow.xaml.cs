@@ -78,7 +78,7 @@ public partial class MainWindow : Window
         ToolWindow.ShowPage(this, "目的地设置", _targets ??= new TargetsPage(), 880, 720);
     }
 
-    public void OpenQueue() => ToolWindow.ShowPage(this, "记录查看", _queue ??= new QueuePage(), 1120, 840);
+    public void OpenQueue() => ToolWindow.ShowPage(this, "查询记录", _queue ??= new QueuePage(), 1120, 840);
 
     private void OnOpenTargets(object sender, RoutedEventArgs e) => OpenTargets();
 

@@ -91,8 +91,6 @@ public partial class App : Application
         void SyncMenu()
         {
             tray.SetPlans(Services.Config.Plans.Select(p => (p.Id, p.Name)));
-            tray.SetStart(Services.Config.StartWithWindows);
-            tray.SetAuto(Services.Config.AutoEnabled, Services.Config.StartWithWindows);
         }
         SyncMenu();
         Services.ConfigChanged += () => Dispatcher.BeginInvoke(() =>
@@ -103,9 +101,8 @@ public partial class App : Application
 
         tray.OpenRequested += ShowMainWindow;
         tray.RetryRequested += Services.Queue.RetryNow;
+        tray.RecordsRequested += ShowRecords;
         tray.ExitRequested += ExitApp;
-        tray.StartToggled += SetStartWithWindows;
-        tray.AutoToggled += SetAutoEnabled;
         tray.BackupRequested += (id, fast) =>
         {
             var plans = Services.Config.Plans.Where(p => id is null || p.Id == id).ToList();
@@ -244,6 +241,14 @@ public partial class App : Application
         if (Auto.StartsIn is null) _countdownTimer.Stop();
         else if (!_countdownTimer.IsEnabled) _countdownTimer.Start();
         Refresh();
+    }
+
+    private void ShowRecords()
+    {
+        var hidden = _window is not { IsVisible: true };
+        ShowMainWindow();
+        _window!.OpenQueue();
+        if (hidden) _window.Hide();
     }
 
     public void ShowMainWindow()
