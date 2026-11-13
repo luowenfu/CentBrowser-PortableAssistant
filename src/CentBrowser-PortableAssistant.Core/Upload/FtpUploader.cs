@@ -53,9 +53,14 @@ public sealed class FtpUploader : IUploader
             if (remoteSize >= 0 && remoteSize != size) throw new IOException("传上去的文件大小不一致");
             return final;
         }
+        catch (OperationCanceledException)
+        {
+            await RemovePartialAsync(final, size, CancellationToken.None);
+            throw;
+        }
         catch (Exception ex) when (UploadErrors.IsExpected(ex) && !ct.IsCancellationRequested)
         {
-            await RemovePartialAsync(final, size, ct);
+            await RemovePartialAsync(final, size, CancellationToken.None);
             throw;
         }
     }

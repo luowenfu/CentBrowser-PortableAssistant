@@ -34,9 +34,27 @@ public partial class AutoBar : UserControl
             _progress = p;
             if (DateTime.UtcNow - _lastRefresh >= TimeSpan.FromMilliseconds(500)) UpdateQueue();
         });
+        App.Backup.CancelStateChanged += () => Dispatcher.BeginInvoke(ShowCancel);
         Load();
         UpdateQueue();
         ShowStatus();
+        ShowCancel();
+    }
+
+    private void ShowCancel() =>
+        CancelBackupButton.Visibility = App.Backup.CanCancel ? Visibility.Visible : Visibility.Collapsed;
+
+    private async void OnCancelBackup(object sender, RoutedEventArgs e)
+    {
+        CancelBackupButton.IsEnabled = false;
+        try
+        {
+            await App.Backup.CancelAsync();
+        }
+        finally
+        {
+            CancelBackupButton.IsEnabled = true;
+        }
     }
 
     private void Load()

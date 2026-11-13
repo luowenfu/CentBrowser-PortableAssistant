@@ -154,6 +154,14 @@ public sealed class StatusLine
 
     private void OnNotice(string title, string text, bool error)
     {
+        if (title == "已取消")
+        {
+            _backupPhase = StatusPhase.Idle;
+            RunFailure = "";
+            lock (_gate) _flight.End();
+            Set("已取消", error: false, TextSource.Result);
+            return;
+        }
         if (title == "开始备份")
         {
             ResetDelivery();

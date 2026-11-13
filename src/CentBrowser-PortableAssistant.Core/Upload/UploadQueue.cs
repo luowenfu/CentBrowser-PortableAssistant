@@ -54,6 +54,69 @@ public sealed class UploadQueue : IDisposable
 
     public void Start() => _loop ??= Task.Run(() => RunAsync(_stop.Token));
 
+    /// <summary>停掉这一批，删掉本地包、半截和已经送到目的地的文件，记录也不留。</summary>
+    public async Task DropBatchesAsync(IReadOnlyCollection<string> batchIds)
+    {
+        if (batchIds.Count == 0) return;
+        var set = batchIds as HashSet<string> ?? batchIds.ToHashSet();
+        CancellationTokenSource previous;
+        Task idle;
+        List<UploadJob> dropped;
+        lock (_gate)
+        {
+            Interlocked.Increment(ref _generation);
+            previous = _attempt;
+            _attempt = new CancellationTokenSource();
+            dropped = _jobs.Where(j => set.Contains(j.BatchId)).ToList();
+            foreach (var job in dropped) _jobs.Remove(job);
+            Save();
+            idle = _inProcess == 0 ? Task.CompletedTask : _idle.Task;
+        }
+        previous.Cancel();
+        Changed?.Invoke();
+        await idle.ConfigureAwait(false);
+
+        foreach (var job in dropped) DeleteLocal(job);
+        foreach (var id in set) TryDeleteDir(Path.Combine(AppPaths.PendingDir, id));
+        foreach (var planId in dropped.Select(j => j.PlanId).Distinct())
+            TryDeleteDir(Path.Combine(AppPaths.StagingDir, planId));
+
+        var records = _history.Read(h => h.Records.Where(r => set.Contains(r.BatchId) && r.RemotePath.Length > 0).ToList());
+        var config = _config();
+        foreach (var group in records.GroupBy(r => r.TargetId))
+        {
+            var target = config.Targets.FirstOrDefault(t => t.Id == group.Key);
+            if (target is null) continue;
+            try
+            {
+                await using var uploader = UploaderFactory.Create(target);
+                foreach (var record in group)
+                {
+                    if (record.FileRemoved) continue;
+                    try { await uploader.DeleteAsync(record.RemotePath, CancellationToken.None); }
+                    catch (Exception ex) when (UploadErrors.IsExpected(ex)) { }
+                }
+            }
+            catch (Exception ex) when (UploadErrors.IsExpected(ex)) { }
+        }
+        _history.Update(h =>
+        {
+            h.Records.RemoveAll(r => set.Contains(r.BatchId));
+            h.Abandoned.RemoveAll(a => set.Contains(a.BatchId));
+        });
+    }
+
+    private static void TryDeleteDir(string path)
+    {
+        try
+        {
+            if (Directory.Exists(path)) Directory.Delete(path, recursive: true);
+        }
+        catch (Exception ex) when (ex is (IOException or UnauthorizedAccessException))
+        {
+        }
+    }
+
     /// <summary>丢掉还没传完的任务。正在传的会停下，并且不再写进备份记录。</summary>
     public async Task DropPendingAsync()
     {
@@ -226,7 +289,12 @@ public sealed class UploadQueue : IDisposable
                 var progress = new Progress<long>(sent => Progress?.Invoke(new UploadProgress(job, target.Name, sent, job.Size)));
                 var uploadStartedUtc = DateTime.UtcNow;
                 var remote = await uploader.UploadAsync(job.LocalPath, job.FileName, progress, ct);
-                if (generation != Volatile.Read(ref _generation)) return;
+                if (generation != Volatile.Read(ref _generation))
+                {
+                    try { await uploader.DeleteAsync(remote, CancellationToken.None); }
+                    catch (Exception ex) when (UploadErrors.IsExpected(ex)) { }
+                    return;
+                }
 
                 _history.Update(h =>
                 {

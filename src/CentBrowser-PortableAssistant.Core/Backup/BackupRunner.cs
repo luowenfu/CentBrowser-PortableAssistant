@@ -58,7 +58,8 @@ public sealed class BackupRunner(HistoryStore history, UploadQueue queue)
         CancellationToken ct,
         CancellationToken browserStarted = default,
         bool lowPriority = false,
-        bool fromAuto = false)
+        bool fromAuto = false,
+        Action<string>? onBatch = null)
     {
         if (Validate(plan, config, install) is { } problem) throw new BackupException(problem);
         if (BrowserProcess.IsRunning(install)) throw new BackupException("Cent Browser 还开着，关掉后再备份", browserRunning: true);
@@ -108,6 +109,8 @@ public sealed class BackupRunner(HistoryStore history, UploadQueue queue)
                 StartedUtc = startedUtc,
                 NextAttemptUtc = DateTime.UtcNow,
             }).ToList();
+            ct.ThrowIfCancellationRequested();
+            onBatch?.Invoke(batchId);
             queue.Enqueue(jobs);
 
             history.Update(h => PackEstimate.Record(h.For(plan.Id).Ratios, files, collected));
@@ -116,12 +119,33 @@ public sealed class BackupRunner(HistoryStore history, UploadQueue queue)
         }
         catch (Exception) when (Directory.Exists(outputDir) && !queue.Snapshot().Any(j => j.BatchId == batchId))
         {
-            Directory.Delete(outputDir, recursive: true);
+            TryDelete(outputDir);
             throw;
         }
         finally
         {
-            if (Directory.Exists(staging)) Directory.Delete(staging, recursive: true);
+            TryDelete(staging);
+        }
+    }
+
+    /// <summary>打包进程刚停时文件可能还被占着，多试几次。</summary>
+    private static void TryDelete(string path)
+    {
+        for (var i = 0; i < 3; i++)
+        {
+            try
+            {
+                if (Directory.Exists(path)) Directory.Delete(path, recursive: true);
+                return;
+            }
+            catch (Exception ex) when (ex is (IOException or UnauthorizedAccessException) && i < 2)
+            {
+                Thread.Sleep(100);
+            }
+            catch (Exception ex) when (ex is (IOException or UnauthorizedAccessException))
+            {
+                return;
+            }
         }
     }
 

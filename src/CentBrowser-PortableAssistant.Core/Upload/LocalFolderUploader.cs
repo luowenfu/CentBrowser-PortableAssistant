@@ -60,11 +60,28 @@ public sealed class LocalFolderUploader : IUploader
             if (new FileInfo(final).Length != size) throw new IOException("复制后大小不一致");
             return final;
         }
+        catch (OperationCanceledException)
+        {
+            DeletePartial(final, size, opened);
+            throw;
+        }
         catch (Exception ex) when (UploadErrors.IsExpected(ex) && !ct.IsCancellationRequested)
         {
-            // 还没打开目标文件时，原来的文件没被动过，不要删
-            if (opened && File.Exists(final) && new FileInfo(final).Length != size) File.Delete(final);
+            DeletePartial(final, size, opened);
             throw;
+        }
+    }
+
+    /// <summary>还没打开目标文件时，原来的文件没被动过，不要删。半截才删。</summary>
+    private static void DeletePartial(string path, long expected, bool opened)
+    {
+        if (!opened) return;
+        try
+        {
+            if (File.Exists(path) && new FileInfo(path).Length != expected) File.Delete(path);
+        }
+        catch (Exception ex) when (ex is (IOException or UnauthorizedAccessException))
+        {
         }
     }
 

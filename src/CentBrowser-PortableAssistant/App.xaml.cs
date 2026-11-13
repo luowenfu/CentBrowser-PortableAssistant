@@ -53,6 +53,7 @@ public partial class App : Application
 
         Services = new AppServices();
         Backup = new BackupService(Services);
+        Backup.WatchQueue();
         Auto = new AutoBackupService(Services, Backup);
         Status = new StatusLine(Services, Backup, Auto);
         Updates = new UpdateService();
