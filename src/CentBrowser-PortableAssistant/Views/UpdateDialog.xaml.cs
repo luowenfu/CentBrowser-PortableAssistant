@@ -28,7 +28,7 @@ public partial class UpdateDialog : Window
         Owner = owner;
         _offer = offer;
         MessageText.Text = "发现 v" + offer.Label;
-        NotesText.Text = string.IsNullOrWhiteSpace(offer.Notes) ? "没有更新说明" : offer.Notes;
+        NotesView.Document = ReleaseNotesDocument.Create(offer.Notes);
         App.Updates.CancelDownload = StopDownload;
         App.Backup.BusyChanged += OnBusy;
         App.Services.Queue.Changed += OnBusy;
