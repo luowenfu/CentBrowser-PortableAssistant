@@ -27,7 +27,7 @@ public static class ReleaseNotesDocument
             PagePadding = new Thickness(2, 0, 8, 0),
             ColumnWidth = 10000,
             TextAlignment = TextAlignment.Left,
-            Background = Brushes.White,
+            Background = Brushes.Transparent,
             IsHyphenationEnabled = false,
         };
         var blocks = ReleaseMarkdown.Parse(markdown);
