@@ -25,8 +25,10 @@ public static class ReleaseNotesDocument
             FontSize = 16,
             Foreground = Ink,
             PagePadding = new Thickness(2, 0, 8, 0),
+            ColumnWidth = 10000,
             TextAlignment = TextAlignment.Left,
             Background = Brushes.White,
+            IsHyphenationEnabled = false,
         };
         var blocks = ReleaseMarkdown.Parse(markdown);
         if (blocks.Count == 0)
@@ -59,37 +61,43 @@ public static class ReleaseNotesDocument
         {
             1 => 32d,
             2 => 24d,
-            3 => 20d,
-            _ => 16d,
+            _ => 20d,
         };
         var top = first ? 0 : 24;
-        var bottom = heading.Level <= 2 ? 8 : 16;
-        var paragraph = Paragraph(heading.Runs, new Thickness(0, top, 0, bottom));
+        var paragraph = Paragraph(heading.Runs, new Thickness(0, top, 0, 16));
         paragraph.FontSize = size;
         paragraph.FontWeight = FontWeights.SemiBold;
         paragraph.LineHeight = size * 1.25;
         if (heading.Level <= 2)
+        {
             paragraph.BorderBrush = Rule;
-        paragraph.BorderThickness = heading.Level <= 2 ? new Thickness(0, 0, 0, 1) : new Thickness(0);
-        paragraph.Padding = heading.Level <= 2 ? new Thickness(0, 0, 0, 8) : new Thickness(0);
+            paragraph.BorderThickness = new Thickness(0, 0, 0, 1);
+            paragraph.Padding = new Thickness(0, 0, 0, 8);
+        }
         return paragraph;
     }
 
-    private static List Items(MdList source)
+    private static Section Items(MdList source)
     {
-        var list = new List
-        {
-            MarkerStyle = source.Ordered ? TextMarkerStyle.Decimal : TextMarkerStyle.Disc,
-            Margin = new Thickness(0, 0, 0, 16),
-            Padding = new Thickness(8, 0, 0, 0),
-        };
+        var section = new Section { Margin = new Thickness(0, 0, 0, 16) };
+        var index = 1;
         foreach (var item in source.Items)
         {
-            var paragraph = Paragraph(item, new Thickness(0, 4, 0, 4));
-            paragraph.LineHeight = 24;
-            list.ListItems.Add(new ListItem(paragraph));
+            var paragraph = new Paragraph
+            {
+                Margin = new Thickness(2, 3, 0, 3),
+                Padding = new Thickness(20, 0, 0, 0),
+                TextIndent = -20,
+                LineHeight = 26,
+                LineStackingStrategy = LineStackingStrategy.BlockLineHeight,
+            };
+            var marker = source.Ordered ? $"{index}. " : "• ";
+            paragraph.Inlines.Add(new Run(marker));
+            AddRuns(paragraph, item);
+            section.Blocks.Add(paragraph);
+            index++;
         }
-        return list;
+        return section;
     }
 
     private static BlockUIContainer Code(string text)
@@ -121,6 +129,12 @@ public static class ReleaseNotesDocument
             LineHeight = 24,
             LineStackingStrategy = LineStackingStrategy.BlockLineHeight,
         };
+        AddRuns(paragraph, runs);
+        return paragraph;
+    }
+
+    private static void AddRuns(Paragraph paragraph, IReadOnlyList<MdRun> runs)
+    {
         foreach (var run in runs)
         {
             if (run.Link is not null && Uri.TryCreate(run.Link, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https")
@@ -146,7 +160,6 @@ public static class ReleaseNotesDocument
             }
             paragraph.Inlines.Add(inline);
         }
-        return paragraph;
     }
 
     private static void OnNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
