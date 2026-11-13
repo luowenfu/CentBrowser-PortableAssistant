@@ -24,6 +24,7 @@ public sealed class StatusLine
     private long _percent = -1;
     private string _batch = "";
     private DateTime _runStartedUtc;
+    private readonly FlightMeter _flight = new();
 
     /// <summary>这句话是谁写的。进行中的那句跑完要收走，结论留着。</summary>
     private enum TextSource { Result, Backup, Upload }
@@ -62,6 +63,12 @@ public sealed class StatusLine
     public StatusPhase Phase =>
         _backupPhase != StatusPhase.Idle ? _backupPhase :
         _app.Queue.IsBusy ? StatusPhase.Upload : StatusPhase.Idle;
+
+    /// <summary>0 到 1 是这一次备份的飞机位置。没有则不飞。</summary>
+    public double? Flight
+    {
+        get { lock (_gate) return _flight.Flight; }
+    }
 
     /// <summary>界面上临时说一句，例如浏览器还开着。</summary>
     public void Note(string text, bool error) => Set(text, error, TextSource.Result);
@@ -123,6 +130,7 @@ public sealed class StatusLine
                 _source = TextSource.Backup;
                 changed = true;
             }
+            if (FlyStage(status)) changed = true;
         }
         if (changed) Changed?.Invoke();
     }
@@ -139,6 +147,7 @@ public sealed class StatusLine
                 IsError = false;
                 _source = TextSource.Result;
             }
+            SettleFlight();
         }
         Changed?.Invoke();
     }
@@ -150,6 +159,7 @@ public sealed class StatusLine
             ResetDelivery();
             _runStartedUtc = DateTime.UtcNow;
             RunFailure = "";
+            lock (_gate) _flight.Begin();
             // 来源记成打包，后面的提取进度才能接上。失败和送达是结论，进度不能倒回去盖
             Set(Pace(_backup.Slow, $"{title}：{text}"), error: false, TextSource.Backup);
             return;
@@ -158,6 +168,7 @@ public sealed class StatusLine
         {
             _backupPhase = StatusPhase.Idle;
             RunFailure = $"{title}：{text}";
+            lock (_gate) _flight.End();
             Set(RunFailure, error: true, TextSource.Result);
             return;
         }
@@ -192,6 +203,7 @@ public sealed class StatusLine
 
     private void OnProgress(UploadProgress p)
     {
+        lock (_gate) FlyUpload(p);
         var percent = p.Total > 0 ? p.Sent * 100 / p.Total : 0;
         if (Interlocked.Exchange(ref _percent, percent) == percent) return;
         if (_app.Queue.HasRetryPending()) return;
@@ -206,6 +218,8 @@ public sealed class StatusLine
             StartBatch(job.BatchId);
             if (!_arrived.Contains(target)) _arrived.Add(target);
             if (DeliveryError is { } e && e.StartsWith($"「{target}」", StringComparison.Ordinal)) DeliveryError = null;
+            if (_flight.Active && job.BatchId == _flight.BatchId && !_flight.Pending(_app.Queue.Snapshot()))
+                _flight.End();
         }
         ShowDelivery(job.Slow, job.StartedUtc);
     }
@@ -224,10 +238,78 @@ public sealed class StatusLine
     /// <summary>队列空了就把"正在上传"收走，别一直挂着。</summary>
     private void OnQueueChanged()
     {
-        if (_source != TextSource.Upload) return;
+        var ended = false;
+        lock (_gate)
+        {
+            if (_flight.Active && _flight.BatchId.Length > 0 && !_flight.Pending(_app.Queue.Snapshot()))
+            {
+                _flight.End();
+                ended = true;
+            }
+        }
+        if (_source != TextSource.Upload)
+        {
+            if (ended) Changed?.Invoke();
+            return;
+        }
         var queue = _app.Queue;
-        if (queue.IsBusy || queue.Snapshot().Count > 0) return;
+        if (queue.IsBusy || queue.Snapshot().Count > 0)
+        {
+            if (ended) Changed?.Invoke();
+            return;
+        }
         Set("", error: false, TextSource.Result);
+    }
+
+    /// <summary>提取、打包往前走。放进队列后记下这一批的总字节。</summary>
+    private bool FlyStage(BackupStatus status)
+    {
+        if (!_flight.Active) return false;
+        var before = _flight.Position;
+        _flight.Stage(status.PlanName, status.Stage, status.Percent);
+        if (status.Stage == BackupStage.Queued) ArmFlight(status.PlanName);
+        return _flight.Position > before;
+    }
+
+    private bool FlyUpload(UploadProgress progress)
+    {
+        if (!_flight.Active || progress.Job.StartedUtc < _runStartedUtc) return false;
+        if (_flight.Plan.Length > 0 && progress.Job.PlanName != _flight.Plan) return false;
+        var before = _flight.Position;
+        var queued = _app.Queue.Snapshot();
+        if (_flight.BatchId.Length == 0)
+            _flight.Arm(queued.Where(j => j.BatchId == progress.Job.BatchId).ToList());
+        _flight.Advance(queued, progress);
+        return _flight.Position > before;
+    }
+
+    private void ArmFlight(string planName)
+    {
+        if (_flight.BatchId.Length > 0) return;
+        var queued = _app.Queue.Snapshot();
+        var mine = queued.Where(j => j.PlanName == planName && j.StartedUtc >= _runStartedUtc).ToList();
+        if (mine.Count == 0) return;
+        var batch = mine.MaxBy(j => j.CreatedUtc)!.BatchId;
+        _flight.Arm(mine.Where(j => j.BatchId == batch).ToList());
+        _flight.Advance(queued, null);
+    }
+
+    /// <summary>提取打包结束。这一批还在队列里就接着飞，否则收起。</summary>
+    private void SettleFlight()
+    {
+        if (!_flight.Active) return;
+        var queued = _app.Queue.Snapshot();
+        if (_flight.BatchId.Length == 0)
+        {
+            var mine = queued.Where(j => j.StartedUtc >= _runStartedUtc).ToList();
+            if (mine.Count > 0)
+            {
+                var batch = mine.MaxBy(j => j.CreatedUtc)!.BatchId;
+                _flight.Arm(mine.Where(j => j.BatchId == batch).ToList());
+                _flight.Advance(queued, null);
+            }
+        }
+        if (!_flight.Pending(queued)) _flight.End();
     }
 
     private void StartBatch(string batchId)

@@ -38,8 +38,13 @@
             </StackPanel>
         </StackPanel>
 
-        <!-- 备份状态，在剩下的空当里居中。外层拉满，文字才不会盖住两边 -->
+        <!-- 备份状态在这段空白里居中。飞机从下面飞过，左右留一点，飞出的部分裁掉 -->
         <Grid>
+            <Canvas x:Name="PlaneTrack" Margin="16,0" ClipToBounds="True" IsHitTestVisible="False"
+                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SizeChanged="OnPlaneTrackSize">
+                <Image x:Name="Plane" Height="32" Source="pack://application:,,,/Assets/plane.png"
+                       RenderOptions.BitmapScalingMode="HighQuality" Visibility="Collapsed" IsHitTestVisible="False" />
+            </Canvas>
             <TextBlock x:Name="StatusText" HorizontalAlignment="Stretch" VerticalAlignment="Center" TextAlignment="Center"
                        TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxHeight="40" Margin="16,6"
                        Foreground="{StaticResource Text2}" />

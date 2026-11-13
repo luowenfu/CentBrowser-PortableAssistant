@@ -26,6 +26,7 @@
     <Resource Include="Assets\app.png" />
     <Resource Include="Assets\donate-wechat.jpg" />
     <Resource Include="Assets\hint-info.png" />
+    <Resource Include="Assets\plane.png" />
   </ItemGroup>
 
 </Project>

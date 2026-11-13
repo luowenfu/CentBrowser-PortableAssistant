@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using CentBrowser_PortableAssistant.Core.Backup;
 using CentBrowser_PortableAssistant.Core.Settings;
 using CentBrowser_PortableAssistant.Core.Upload;
@@ -16,6 +17,7 @@ public partial class AutoBar : UserControl
     private static readonly int[] Limits = [0, 512, 1024, 2048, 5120];
 
     private bool _loading;
+    private bool _planeShown;
     private string? _dismissed;
     private UploadProgress? _progress;
     private DateTime _lastRefresh;
@@ -25,6 +27,7 @@ public partial class AutoBar : UserControl
     public AutoBar()
     {
         InitializeComponent();
+        Loaded += (_, _) => PlacePlane(animate: false);
         App.Services.ConfigChanged += () => Dispatcher.BeginInvoke(Load);
         App.Status.Changed += () => Dispatcher.BeginInvoke(ShowStatus);
         var queue = App.Services.Queue;
@@ -113,9 +116,50 @@ public partial class AutoBar : UserControl
         StatusText.ToolTip = null;
     }
 
+    private void OnPlaneTrackSize(object sender, SizeChangedEventArgs e) => PlacePlane(animate: false);
+
+    /// <summary>整张图从空白左端滑入、右端滑出。0 时机头刚到起点，1 时包裹左缘刚离开终点。</summary>
+    private void PlacePlane(bool animate)
+    {
+        var flight = App.Status.Flight;
+        var imageWidth = PlaneImageWidth();
+        if (flight is not double progress || imageWidth <= 0 || PlaneTrack.ActualWidth <= 0)
+        {
+            if (flight is null)
+            {
+                Plane.BeginAnimation(Canvas.LeftProperty, null);
+                Plane.Visibility = Visibility.Collapsed;
+                _planeShown = false;
+            }
+            return;
+        }
+        var x = FlightProgress.Left(progress, PlaneTrack.ActualWidth, imageWidth);
+        Canvas.SetTop(Plane, Math.Max(0, (PlaneTrack.ActualHeight - Plane.Height) / 2));
+        Plane.Visibility = Visibility.Visible;
+        if (!animate || !_planeShown)
+        {
+            Plane.BeginAnimation(Canvas.LeftProperty, null);
+            Canvas.SetLeft(Plane, x);
+            _planeShown = true;
+            return;
+        }
+        Plane.BeginAnimation(Canvas.LeftProperty, new DoubleAnimation(x, TimeSpan.FromMilliseconds(300))
+        {
+            EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut },
+        });
+    }
+
+    /// <summary>按显示高度 32 和原图像素比例算宽度。折叠时布局宽度是 0，不能用 ActualWidth。</summary>
+    private double PlaneImageWidth()
+    {
+        if (Plane.Source is not System.Windows.Media.Imaging.BitmapSource bitmap || bitmap.PixelHeight <= 0) return 0;
+        return Plane.Height * bitmap.PixelWidth / bitmap.PixelHeight;
+    }
+
     /// <summary>已送达的目的地用普通颜色，失败那一行单独用红色。</summary>
     private void ShowStatus()
     {
+        PlacePlane(animate: true);
         var status = App.Status;
         if (_dismissed is not null)
         {
