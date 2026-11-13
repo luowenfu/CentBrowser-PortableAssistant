@@ -14,15 +14,13 @@
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button Style="{StaticResource QuietButton}" Click="OnOpenTargets">
                         <StackPanel Orientation="Horizontal">
-                            <Rectangle x:Name="CloudIcon" Width="16" Height="16" VerticalAlignment="Center"
-                                       Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                            <TextBlock Style="{StaticResource Icon}" Text="&#xE753;" FontSize="14" />
                             <TextBlock Text="目的地设置" Margin="8,0,0,0" />
                         </StackPanel>
                     </Button>
                     <Button Style="{StaticResource QuietButton}" Margin="4,0,0,0" Click="OnOpenAbout">
                         <StackPanel Orientation="Horizontal">
-                            <Rectangle x:Name="AboutIcon" Width="16" Height="16" VerticalAlignment="Center"
-                                       Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                            <TextBlock Style="{StaticResource Icon}" Text="&#xE946;" FontSize="14" />
                             <TextBlock Text="关于" Margin="8,0,0,0" />
                         </StackPanel>
                     </Button>
