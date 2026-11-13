@@ -117,6 +117,7 @@ public sealed class CollectAndPackTests : IDisposable
 
         var localState = JsonNode.Parse(File.ReadAllText(S("User Data/Local State")))!;
         Assert.Null(localState["os_crypt"]);
+        Assert.Equal("1.2.3.4", localState["browser"]!["suppress_default_browser_prompt_for_version"]!.GetValue<string>());
         Assert.Equal("Profile 1", localState["profile"]!["last_used"]!.GetValue<string>());
 
         var prefs = JsonNode.Parse(File.ReadAllText(S("User Data/Profile 1/Preferences")))!;

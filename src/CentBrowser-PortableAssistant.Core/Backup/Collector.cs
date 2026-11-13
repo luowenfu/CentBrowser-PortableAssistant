@@ -35,7 +35,7 @@ public static class Collector
                     File.WriteAllText(dest, install.Version);
                     break;
                 case CollectKind.LocalState:
-                    WriteJson(item.Source, dest, n => JsonTrimmer.TrimLocalState(n, profiles));
+                    WriteJson(item.Source, dest, n => JsonTrimmer.TrimLocalState(n, profiles, install.Version));
                     break;
                 case CollectKind.Preferences:
                     var profileDir = Path.GetDirectoryName(item.Source)!;

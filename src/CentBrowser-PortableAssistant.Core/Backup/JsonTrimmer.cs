@@ -7,11 +7,12 @@ public static class JsonTrimmer
 {
     private static readonly int[] ComponentLocations = [5, 10];
 
-    /// <summary>删掉本机加密密钥，用户列表只留选中的。</summary>
-    public static JsonNode TrimLocalState(JsonNode localState, IReadOnlyCollection<string> keepProfiles)
+    /// <summary>删掉本机加密密钥，用户列表只留选中的。写上当前版本，避免解压后弹出选用 Chrome 的提示。</summary>
+    public static JsonNode TrimLocalState(JsonNode localState, IReadOnlyCollection<string> keepProfiles, string version)
     {
         var root = localState.AsObject();
         root.Remove("os_crypt");
+        SuppressDefaultBrowserPrompt(root, version);
 
         if (root["profile"] is not JsonObject profile) return root;
         bool Keep(string dir) => keepProfiles.Contains(dir, StringComparer.OrdinalIgnoreCase);
@@ -62,6 +63,21 @@ public static class JsonTrimmer
             slim["extensions"] = new JsonObject { ["settings"] = kept.DeepClone() };
         }
         return slim;
+    }
+
+    /// <summary>
+    /// 浏览器不是系统默认浏览器时会弹「Choose Chrome」。
+    /// 这项和程序版本一致就不再弹。记在 Local State 里，不跟某个用户走。
+    /// </summary>
+    private static void SuppressDefaultBrowserPrompt(JsonObject root, string version)
+    {
+        if (string.IsNullOrWhiteSpace(version)) return;
+        if (root["browser"] is not JsonObject browser)
+        {
+            browser = new JsonObject();
+            root["browser"] = browser;
+        }
+        browser["suppress_default_browser_prompt_for_version"] = version;
     }
 
     private static bool IsComponent(JsonNode? ext) =>

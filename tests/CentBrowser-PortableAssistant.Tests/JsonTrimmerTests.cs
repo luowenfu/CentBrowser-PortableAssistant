@@ -21,10 +21,11 @@ public class JsonTrimmerTests
             }
             """)!;
 
-        var result = JsonTrimmer.TrimLocalState(node, ["Profile 1"]).AsObject();
+        var result = JsonTrimmer.TrimLocalState(node, ["Profile 1"], "5.3.1184.31").AsObject();
 
         Assert.False(result.ContainsKey("os_crypt"));
-        Assert.NotNull(result["browser"]);
+        Assert.Equal("5.3.1184.31", result["browser"]!["suppress_default_browser_prompt_for_version"]!.GetValue<string>());
+        Assert.Equal(1, result["browser"]!["x"]!.GetValue<int>());
         var profile = result["profile"]!;
         Assert.Equal(["Profile 1"], profile["info_cache"]!.AsObject().Select(kv => kv.Key));
         Assert.Equal("Profile 1", profile["last_used"]!.GetValue<string>());

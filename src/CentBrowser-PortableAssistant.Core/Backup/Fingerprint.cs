@@ -23,6 +23,7 @@ public static class Fingerprint
         content.AutoBackup = false;
         sb.Append(JsonSerializer.Serialize(content, JsonFile.Options)).Append('\n');
         if (plan.IncludeProgram) sb.Append("program=").Append(install.Version).Append('\n');
+        sb.Append("no-default-prompt=").Append(install.Version).Append('\n');
 
         foreach (var item in items.Where(i => !i.IsProgram && i.Kind != CollectKind.PortableMarker).OrderBy(i => i.Dest, StringComparer.Ordinal))
         {
