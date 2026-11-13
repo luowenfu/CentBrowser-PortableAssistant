@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using CentBrowser_PortableAssistant.Core.Schedule;
 using CentBrowser_PortableAssistant.Core.Update;
 
 namespace CentBrowser_PortableAssistant.Services;
@@ -81,16 +82,54 @@ public sealed class UpdateService
         long length;
         try { length = new FileInfo(exe).Length; }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { return; }
-        Offer = UpdateOffer.Choose(Current(), PackageNames.SelfContained(length), _gitee, _github);
+        Offer = UpdateOffer.Choose(Current().Version, PackageNames.SelfContained(length), _gitee, _github);
         Changed?.Invoke();
     }
 
-    public static AppVersion RunningVersion() => Current();
+    public static AppVersion RunningVersion() => Current().Version;
 
-    private static AppVersion Current()
+    public static string RunningLabel() => Current().Label;
+
+    /// <summary>
+    /// 文件名上的版本号和正在运行的程序不一致时，改成当前版本再重新打开。
+    /// 同名文件如果已经是更新的程序，不盖掉。开机启动带来的托盘参数会带过去。
+    /// </summary>
+    public static bool RelaunchIfNameStale(bool tray)
+    {
+        if (Debugger.IsAttached) return false;
+        var exe = Environment.ProcessPath;
+        if (string.IsNullOrEmpty(exe) || !ExeSwap.CanCheck(exe)) return false;
+        var (version, label) = Current();
+        if (label.Length == 0) return false;
+        var final = VersionedName.WithVersion(exe, version, label);
+        if (string.Equals(final, exe, StringComparison.OrdinalIgnoreCase)) return false;
+        if (File.Exists(final) && IsNewerBuild(final, version)) return false;
+        if (!ExeSwap.TryRename(exe, final)) return false;
+        AutoStart.Retarget(final);
+        var more = tray ? AutoStart.TrayArgument : null;
+        if (ExeSwap.TryStart(final, Environment.ProcessId, exe, more)) return true;
+        ExeSwap.TryRename(final, exe);
+        return false;
+    }
+
+    private static bool IsNewerBuild(string path, AppVersion current)
+    {
+        try
+        {
+            var text = FileVersionInfo.GetVersionInfo(path).FileVersion;
+            if (!AppVersion.TryParse(text, out var found, out _)) return false;
+            return found.CompareTo(current) > 0;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return true;
+        }
+    }
+
+    private static (AppVersion Version, string Label) Current()
     {
         var raw = Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "";
         var text = raw.Split('+')[0];
-        return AppVersion.TryParse(text, out var version, out _) ? version : default;
+        return AppVersion.TryParse(text, out var version, out var label) ? (version, label) : (default, "");
     }
 }

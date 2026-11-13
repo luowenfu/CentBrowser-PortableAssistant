@@ -43,6 +43,8 @@ public partial class App : Application
     {
         base.OnStartup(e);
         ExeSwap.WaitForPrevious(e.Args);
+        if (UpdateService.RelaunchIfNameStale(e.Args.Contains(AutoStart.TrayArgument)))
+            Environment.Exit(0);
         _mutex = new Mutex(true, InstanceName, out var first);
         _showSignal = new EventWaitHandle(false, EventResetMode.AutoReset, InstanceName + ".Show");
         if (!first)

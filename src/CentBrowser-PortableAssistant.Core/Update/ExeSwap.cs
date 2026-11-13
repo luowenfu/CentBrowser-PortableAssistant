@@ -33,30 +33,36 @@ public static class ExeSwap
         }
     }
 
-    /// <summary>先把正在运行的文件改成 .old，再把 .new 改成原名。第二步失败会改回去。</summary>
-    public static bool TrySwap(string exe)
+    /// <summary>
+    /// 先把正在运行的文件改成 .old，再把 .new 放到 destination。
+    /// 新名字已有文件时直接盖掉。盖不上就放回原名，返回实际落地的路径。两步都失败则改回去并返回 null。
+    /// </summary>
+    public static string? TryInstall(string exe, string destination)
     {
+        if (string.IsNullOrWhiteSpace(destination)) destination = exe;
         var old = OldPath(exe);
         var neu = NewPath(exe);
         TryDelete(old);
-        if (!TryMove(exe, old)) return false;
-        if (TryMove(neu, exe)) return true;
+        if (!TryMove(exe, old)) return null;
+        if (TryMove(neu, destination)) return destination;
+        if (!string.Equals(destination, exe, StringComparison.OrdinalIgnoreCase) && TryMove(neu, exe)) return exe;
         TryMove(old, exe);
-        return false;
+        return null;
     }
 
+    /// <summary>目标已存在时盖掉。以前见文件在就放弃，新程序会留在旧文件名上。</summary>
     public static bool TryRename(string from, string to)
     {
         if (string.Equals(from, to, StringComparison.OrdinalIgnoreCase)) return true;
-        if (File.Exists(to)) return false;
         return TryMove(from, to);
     }
 
-    public static bool TryStart(string exe, int pid, string? replaced = null)
+    public static bool TryStart(string exe, int pid, string? replaced = null, string? moreArgs = null)
     {
         var arguments = "--replace " + pid;
         if (ReplacedDiffers(exe, replaced))
             arguments += " --replaced \"" + replaced!.Replace("\"", "") + "\"";
+        if (!string.IsNullOrWhiteSpace(moreArgs)) arguments += " " + moreArgs;
         try
         {
             return Process.Start(new ProcessStartInfo

@@ -121,19 +121,18 @@ public partial class UpdateDialog : Window
             }
             held = true;
             if (Owner is MainWindow main) main.Plans.Flush();
-            if (!ExeSwap.TrySwap(exe))
+            var final = VersionedName.WithVersion(exe, UpdateService.RunningVersion(), _offer.Label);
+            var landed = ExeSwap.TryInstall(exe, final);
+            if (landed is null)
             {
                 Fail();
                 return;
             }
-            var final = VersionedName.WithVersion(exe, UpdateService.RunningVersion(), _offer.Label);
-            if (!string.Equals(final, exe, StringComparison.OrdinalIgnoreCase) && !ExeSwap.TryRename(exe, final))
-                final = exe;
-            _launchPath = final;
+            _launchPath = landed;
             _swapped = true;
-            AutoStart.Retarget(final);
+            AutoStart.Retarget(landed);
             SetStatus("下载完成、即将更新");
-            started = ExeSwap.TryStart(final, Environment.ProcessId, exe);
+            started = ExeSwap.TryStart(landed, Environment.ProcessId, exe);
             if (started) ((App)Application.Current).ExitNow();
         }
         finally

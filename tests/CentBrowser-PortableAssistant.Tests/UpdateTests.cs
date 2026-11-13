@@ -111,6 +111,50 @@ public class UpdateTests
     }
 
     [Fact]
+    public void StalePackageNameTakesTheNewVersion()
+    {
+        AppVersion.TryParse("1.5", out var running, out _);
+        Assert.Equal(
+            @"D:\Tools\CentBrowser-PortableAssistant-v1.6.exe",
+            VersionedName.WithVersion(@"D:\Tools\CentBrowser-PortableAssistant-v1.4.50.exe", running, "1.6"));
+        Assert.Equal(
+            @"D:\Tools\CentBrowser-PortableAssistant-v1.6-selfcontained.exe",
+            VersionedName.WithVersion(@"D:\Tools\CentBrowser-PortableAssistant-v1.4.50-selfcontained.exe", running, "1.6"));
+        Assert.Equal(
+            @"D:\Tools\CentBrowser-PortableAssistant-v1.6 - 副本.exe",
+            VersionedName.WithVersion(@"D:\Tools\CentBrowser-PortableAssistant-v1.4.50 - 副本.exe", running, "1.6"));
+        var current = @"D:\Tools\CentBrowser-PortableAssistant-v1.5-selfcontained.exe";
+        Assert.Equal(current, VersionedName.WithVersion(current, running, "1.5"));
+    }
+
+    [Fact]
+    public void InstallOverwritesExistingVersionName()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "cb-update-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        try
+        {
+            var exe = Path.Combine(dir, "CentBrowser-PortableAssistant-v1.4.50.exe");
+            var dest = Path.Combine(dir, "CentBrowser-PortableAssistant-v1.5.exe");
+            File.WriteAllText(exe, "old");
+            File.WriteAllText(dest, "previous");
+            File.WriteAllText(ExeSwap.NewPath(exe), "new");
+
+            var landed = ExeSwap.TryInstall(exe, dest);
+
+            Assert.Equal(dest, landed);
+            Assert.Equal("new", File.ReadAllText(dest));
+            Assert.False(File.Exists(exe));
+            Assert.Equal("old", File.ReadAllText(ExeSwap.OldPath(exe)));
+            Assert.False(File.Exists(ExeSwap.NewPath(exe)));
+        }
+        finally
+        {
+            Directory.Delete(dir, recursive: true);
+        }
+    }
+
+    [Fact]
     public void UnreadableTagFailsThatSide()
     {
         var read = ReleaseInfo.Read("""{"tag_name":"v1.2-beta","prerelease":false,"assets":[]}""", UpdateSource.GitHub);
