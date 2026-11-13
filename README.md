@@ -69,6 +69,16 @@
 
 版本号由 `build.ps1` 维护在根目录的 `VERSION` 文件里，不要手动改。
 
+## 捐赠
+
+![微信扫码](assets/donate-wechat.jpg)
+
+微信扫码
+
+觉得有用，可以请作者一杯咖啡
+
+自愿，不影响使用
+
 ## 第三方组件
 
 - [7-Zip](https://www.7-zip.org/) 25.01，GNU LGPL，见 `third_party/7zip/License.txt`
