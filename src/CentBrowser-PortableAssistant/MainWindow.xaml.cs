@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using CentBrowser_PortableAssistant.Views;
 
@@ -34,7 +35,61 @@ public partial class MainWindow : Window
         App.Updates.Changed += SyncUpdateButton;
         SyncUpdateButton();
         TitleBarIcon.Remove(this);
-        SourceInitialized += (_, _) => FitToScreen();
+        TintHeaderIcons();
+        SourceInitialized += (_, _) =>
+        {
+            FitToScreen();
+            TintHeaderIcons();
+        };
+        DpiChanged += (_, _) => TintHeaderIcons();
+    }
+
+    /// <summary>
+    /// 图标线条缩到按钮旁边后盖不满一个像素，会被底色冲淡，看起来比字浅。
+    /// 按屏幕像素重画，再把最深的地方拉回不透明，颜色才和按钮文字一致。
+    /// </summary>
+    private void TintHeaderIcons()
+    {
+        var dpi = VisualTreeHelper.GetDpi(this);
+        CloudIcon.OpacityMask = IconMask("pack://application:,,,/Assets/icon-cloud.png", dpi);
+        AboutIcon.OpacityMask = IconMask("pack://application:,,,/Assets/icon-about.png", dpi);
+    }
+
+    private static Brush IconMask(string uri, DpiScale dpi)
+    {
+        const double size = 16;
+        var px = Math.Max(1, (int)Math.Round(size * dpi.PixelsPerDip));
+        var src = new BitmapImage();
+        src.BeginInit();
+        src.UriSource = new Uri(uri, UriKind.Absolute);
+        src.CacheOption = BitmapCacheOption.OnLoad;
+        src.EndInit();
+
+        var visual = new DrawingVisual();
+        using (var dc = visual.RenderOpen())
+            dc.DrawImage(src, new Rect(0, 0, px, px));
+        var dpiX = 96 * dpi.PixelsPerDip;
+        var target = new RenderTargetBitmap(px, px, dpiX, dpiX, PixelFormats.Pbgra32);
+        target.Render(visual);
+
+        var stride = px * 4;
+        var pixels = new byte[stride * px];
+        target.CopyPixels(pixels, stride, 0);
+        var max = 1;
+        for (var i = 3; i < pixels.Length; i += 4)
+            if (pixels[i] > max) max = pixels[i];
+        for (var i = 3; i < pixels.Length; i += 4)
+        {
+            var lifted = Math.Pow(pixels[i] / (double)max, 0.55);
+            pixels[i] = (byte)Math.Min(255, (int)Math.Round(lifted * 255));
+            pixels[i - 1] = pixels[i - 2] = pixels[i - 3] = 0;
+        }
+
+        var bitmap = BitmapSource.Create(px, px, dpiX, dpiX, PixelFormats.Pbgra32, null, pixels, stride);
+        bitmap.Freeze();
+        var brush = new ImageBrush(bitmap) { Stretch = Stretch.Fill };
+        brush.Freeze();
+        return brush;
     }
 
     /// <summary>
