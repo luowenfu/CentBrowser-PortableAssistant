@@ -266,50 +266,50 @@
                     <UniformGrid Columns="6">
                         <UniformGrid.Resources>
                             <Style TargetType="TextBlock" BasedOn="{StaticResource ItemHint}">
-                                <Setter Property="Margin" Value="24,2,8,0" />
+                                <Setter Property="Margin" Value="22,2,0,0" />
                                 <Setter Property="TextWrapping" Value="NoWrap" />
-                                <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                <Setter Property="TextTrimming" Value="None" />
                             </Style>
                         </UniformGrid.Resources>
                         <StackPanel>
                             <CheckBox IsChecked="{Binding IncludeBookmarks}" Content="书签" />
-                            <TextBlock Text="书签栏和收藏夹" />
+                            <TextBlock Text="收藏的网页" />
                         </StackPanel>
                         <StackPanel>
                             <CheckBox IsChecked="{Binding IncludeHistory}" Content="历史记录" />
-                            <TextBlock Text="浏览和下载记录" />
+                            <TextBlock Text="浏览记录" />
                         </StackPanel>
                         <StackPanel>
                             <CheckBox IsChecked="{Binding IncludeSettings}" Content="浏览器设置" />
-                            <TextBlock Text="主页、搜索、外观等" />
+                            <TextBlock Text="主页、外观等" />
                         </StackPanel>
                         <StackPanel>
                             <CheckBox IsChecked="{Binding IncludeSiteData}" Content="网站设置" />
-                            <TextBlock Text="各个网站的偏好和记录" />
+                            <TextBlock Text="各站偏好" />
                         </StackPanel>
                         <StackPanel>
                             <CheckBox IsChecked="{Binding IncludeSecrets}" Content="本机机密" />
                             <TextBlock>
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock" BasedOn="{StaticResource ItemHint}">
-                                        <Setter Property="Margin" Value="24,2,8,0" />
+                                        <Setter Property="Margin" Value="22,2,0,0" />
                                         <Setter Property="TextWrapping" Value="NoWrap" />
-                                        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
-                                        <Setter Property="Text" Value="保存密码、Cookie、自动填充" />
+                                        <Setter Property="TextTrimming" Value="None" />
+                                        <Setter Property="Text" Value="密码和 Cookie" />
                                         <Style.Triggers>
                                             <MultiDataTrigger>
                                                 <MultiDataTrigger.Conditions>
                                                     <Condition Binding="{Binding IncludeSecrets}" Value="True" />
                                                     <Condition Binding="{Binding DataContext.PortableBrowser, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True" />
                                                 </MultiDataTrigger.Conditions>
-                                                <Setter Property="Text" Value="目前为便携版，可以带走" />
+                                                <Setter Property="Text" Value="便携版可行" />
                                             </MultiDataTrigger>
                                             <MultiDataTrigger>
                                                 <MultiDataTrigger.Conditions>
                                                     <Condition Binding="{Binding IncludeSecrets}" Value="True" />
                                                     <Condition Binding="{Binding DataContext.PortableBrowser, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="False" />
                                                 </MultiDataTrigger.Conditions>
-                                                <Setter Property="Text" Value="目前为安装版，带走后仍无效" />
+                                                <Setter Property="Text" Value="安装版无效" />
                                                 <Setter Property="Foreground" Value="{StaticResource Danger}" />
                                             </MultiDataTrigger>
                                         </Style.Triggers>
@@ -319,7 +319,7 @@
                         </StackPanel>
                         <StackPanel>
                             <CheckBox IsChecked="{Binding IncludeExtensions}" Content="扩展" />
-                            <TextBlock Text="在第 4 步挑选" />
+                            <TextBlock Text="下一步选" />
                         </StackPanel>
                     </UniformGrid>
                     <Border Background="{StaticResource Bg}" CornerRadius="8" Padding="12,8" Margin="0,12,0,0">
