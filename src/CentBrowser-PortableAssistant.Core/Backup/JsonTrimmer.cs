@@ -8,7 +8,7 @@ public static class JsonTrimmer
     private static readonly int[] ComponentLocations = [5, 10];
 
     /// <summary>删掉本机加密密钥，用户列表只留选中的。写上当前版本，避免解压后弹出选用 Chrome 的提示。</summary>
-    /// <param name="keepOsCrypt">本机机密要靠这把钥匙在本机还原，勾了才留下。</param>
+    /// <param name="keepOsCrypt">机密信息要靠这把钥匙在本机还原，勾了才留下。</param>
     public static JsonNode TrimLocalState(JsonNode localState, IReadOnlyCollection<string> keepProfiles, string version, bool keepOsCrypt = false)
     {
         var root = localState.AsObject();

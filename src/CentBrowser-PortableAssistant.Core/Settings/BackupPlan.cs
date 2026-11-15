@@ -54,7 +54,7 @@ public sealed class BackupPlan
     /// <summary>DPAPI 加密后的解压密码。</summary>
     public string PasswordProtected { get; set; } = "";
 
-    /// <summary>勾了本机机密，或者打开了「设置解压密码」，压缩包必须有密码。</summary>
+    /// <summary>勾了机密信息，或者打开了「设置解压密码」，压缩包必须有密码。</summary>
     public bool NeedsArchivePassword()
     {
         if (RequirePassword) return true;

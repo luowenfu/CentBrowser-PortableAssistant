@@ -261,7 +261,7 @@
             <HeaderedContentControl Style="{StaticResource StepCard}" Tag="3">
                 <HeaderedContentControl.Header>
                     <DockPanel>
-                        <TextBlock DockPanel.Dock="Right" Text="「本机机密」便携版带走可用；安装版仅本机可用" Style="{StaticResource Mono}"
+                        <TextBlock DockPanel.Dock="Right" Text="「机密信息」便携版带走可用；安装版仅本机可用" Style="{StaticResource Mono}"
                                    VerticalAlignment="Center"
                                    Visibility="{Binding IncludeSecrets, Converter={StaticResource Vis}}" />
                         <DockPanel Margin="0,0,16,0">
@@ -302,7 +302,7 @@
                             <TextBlock Style="{StaticResource ItemSize}" Text="{Binding SiteDataSize}" />
                         </StackPanel>
                         <StackPanel>
-                            <CheckBox IsChecked="{Binding IncludeSecrets}" Content="本机机密" />
+                            <CheckBox IsChecked="{Binding IncludeSecrets}" Content="机密信息" />
                             <TextBlock Text="密码和 Cookie" />
                             <TextBlock Style="{StaticResource ItemSize}" Text="{Binding SecretsSize}" />
                         </StackPanel>

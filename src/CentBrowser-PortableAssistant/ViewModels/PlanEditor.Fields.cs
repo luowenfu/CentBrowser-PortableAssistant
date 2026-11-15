@@ -108,7 +108,7 @@ public sealed partial class PlanEditor
         set { _password = value; Changed(); }
     }
 
-    /// <summary>勾了本机机密时解压密码不能关。</summary>
+    /// <summary>勾了机密信息时解压密码不能关。</summary>
     public bool PasswordLocked => Profiles.Any(p => p.IsChecked && p.IncludeSecrets);
 
     public bool PasswordEditable => !PasswordLocked;
