@@ -133,6 +133,27 @@ public sealed class CollectAndPackTests : IDisposable
     }
 
     [Fact]
+    public void ContentSizesFollowTheFilesEachOptionPacks()
+    {
+        var dir = _browser.Path_("User Data/Profile 1");
+        var size = ProfilePaths.MeasureContent(dir);
+
+        Assert.Equal(new FileInfo(_browser.Path_("User Data/Profile 1/Bookmarks")).Length, size.Bookmarks);
+        Assert.Equal(new FileInfo(_browser.Path_("User Data/Profile 1/Favicons")).Length, size.Favicons);
+        Assert.Equal(new FileInfo(_browser.Path_("User Data/Profile 1/History")).Length, size.History);
+        Assert.True(size.Settings >= new FileInfo(_browser.Path_("User Data/Profile 1/Preferences")).Length);
+        Assert.True(size.WebData > 0);
+        Assert.Equal(new FileInfo(_browser.Path_("User Data/Profile 1/Local Storage/leveldb/000003.log")).Length, size.SiteData);
+        Assert.Equal(
+            new FileInfo(_browser.Path_("User Data/Profile 1/Login Data")).Length
+            + new FileInfo(_browser.Path_("User Data/Profile 1/Network/Cookies")).Length
+            + new FileInfo(_browser.Path_("User Data/Profile 1/Account Web Data")).Length,
+            size.Secrets);
+        Assert.Equal(0, size.WebSide);
+        Assert.Equal(0, size.SharedExtensions);
+    }
+
+    [Fact]
     public void SecretsKeepMachineKeyAndFullWebData()
     {
         var plan = OnlyProfile1WithAlpha();

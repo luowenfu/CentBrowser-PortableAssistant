@@ -58,4 +58,32 @@ public static class ProfilePaths
         if (!Directory.Exists(path)) return 0;
         return new DirectoryInfo(path).EnumerateFiles("*", SearchOption.AllDirectories).Sum(f => f.Length);
     }
+
+    /// <summary>第 3 步六项各自的体积。图标先归书签，只有不带书签时才归历史。Web Data 先归设置，勾了本机机密才改归机密。</summary>
+    public readonly record struct ContentMeasure(
+        long Bookmarks,
+        long Favicons,
+        long History,
+        long Settings,
+        long WebData,
+        long WebSide,
+        long SiteData,
+        long Secrets,
+        long SharedExtensions);
+
+    public static ContentMeasure MeasureContent(string profileDir)
+    {
+        long Of(string rel) => SizeOf(Path.Combine(profileDir, rel));
+        long Sum(IEnumerable<string> rels) => rels.Sum(Of);
+        return new ContentMeasure(
+            Sum(Bookmarks),
+            Sum(Favicons),
+            Sum(History),
+            Sum(Settings),
+            Of(WebData),
+            Of(WebData + "-journal") + Of(WebData + "-wal"),
+            Of(LocalStorage),
+            Sum(Secrets),
+            Sum(SharedExtensionData));
+    }
 }

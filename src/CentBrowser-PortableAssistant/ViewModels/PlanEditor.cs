@@ -87,6 +87,7 @@ public sealed partial class PlanEditor : ObservableObject
         {
             if (_current == value) return;
             value?.EnsureExtensions();
+            value?.EnsureContentSizes();
             _current = value;
             Raise();
         }

@@ -66,13 +66,27 @@ public sealed class ProfileEditor : ObservableObject
     public bool IncludeBookmarks
     {
         get => _options.IncludeBookmarks;
-        set { _options.IncludeBookmarks = value; Changed(); }
+        set
+        {
+            if (_options.IncludeBookmarks == value) return;
+            _options.IncludeBookmarks = value;
+            Raise(nameof(BookmarkSize));
+            Raise(nameof(HistorySize));
+            Changed();
+        }
     }
 
     public bool IncludeHistory
     {
         get => _options.IncludeHistory;
-        set { _options.IncludeHistory = value; Changed(); }
+        set
+        {
+            if (_options.IncludeHistory == value) return;
+            _options.IncludeHistory = value;
+            Raise(nameof(BookmarkSize));
+            Raise(nameof(HistorySize));
+            Changed();
+        }
     }
 
     public bool IncludeSettings
@@ -95,6 +109,8 @@ public sealed class ProfileEditor : ObservableObject
             if (_options.IncludeSecrets == value) return;
             _options.IncludeSecrets = value;
             Raise(nameof(IncludeSecrets));
+            Raise(nameof(SettingsSize));
+            Raise(nameof(SecretsSize));
             Changed();
         }
     }
@@ -118,6 +134,7 @@ public sealed class ProfileEditor : ObservableObject
             _bulk = false;
             Raise(nameof(IncludeExtensionData));
             Raise(nameof(ExtensionSummary));
+            Raise(nameof(ExtensionSize));
             Changed();
         }
     }
@@ -139,6 +156,7 @@ public sealed class ProfileEditor : ObservableObject
             Raise(nameof(AllExtensions));
             if (dataChanged) Raise(nameof(IncludeExtensionData));
             Raise(nameof(ExtensionSummary));
+            Raise(nameof(ExtensionSize));
             Changed();
         }
     }
@@ -159,6 +177,74 @@ public sealed class ProfileEditor : ObservableObject
             return $"{selected.Count}个扩展 | 程序 {Format.Size(program).Replace(" ", "")} | 数据 {Format.Size(data).Replace(" ", "")}";
         }
     }
+
+    public string BookmarkSize => Show(BookmarkBytes);
+
+    public string HistorySize => Show(HistoryBytes);
+
+    public string SettingsSize => Show(SettingsBytes);
+
+    public string SiteDataSize => Show(_measure?.SiteData ?? 0);
+
+    public string SecretsSize => Show(SecretsBytes);
+
+    public string ExtensionSize
+    {
+        get
+        {
+            if (!_extensionsLoaded) return "…";
+            var selected = Extensions.Where(e => e.IsChecked).ToList();
+            var bytes = selected.Sum(e => e.ProgramBytes) + selected.Where(e => e.IncludeData).Sum(e => e.DataBytes);
+            if (_measure is { } m && selected.Any(e => e.IncludeData)) bytes += m.SharedExtensions;
+            return Format.Size(bytes);
+        }
+    }
+
+    /// <summary>第一次打开这个用户时在后台统计各项体积。</summary>
+    public void EnsureContentSizes()
+    {
+        if (_sizesStarted) return;
+        _sizesStarted = true;
+        var path = _profilePath;
+        var context = SynchronizationContext.Current;
+        Task.Run(() =>
+        {
+            try { return ProfilePaths.MeasureContent(path); }
+            catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException) { return default; }
+        }).ContinueWith(t =>
+        {
+            void Apply()
+            {
+                if (t.IsCompletedSuccessfully)
+                {
+                    _measure = t.Result;
+                    Raise(nameof(BookmarkSize));
+                    Raise(nameof(HistorySize));
+                    Raise(nameof(SettingsSize));
+                    Raise(nameof(SiteDataSize));
+                    Raise(nameof(SecretsSize));
+                    Raise(nameof(ExtensionSize));
+                }
+            }
+            if (context is null) Apply();
+            else context.Post(_ => Apply(), null);
+        });
+    }
+
+    private bool _sizesStarted;
+    private ProfilePaths.ContentMeasure? _measure;
+
+    private bool IconsWithBookmarks => _options.IncludeBookmarks || !_options.IncludeHistory;
+
+    private long BookmarkBytes => (_measure?.Bookmarks ?? 0) + (IconsWithBookmarks ? _measure?.Favicons ?? 0 : 0);
+
+    private long HistoryBytes => (_measure?.History ?? 0) + (IconsWithBookmarks ? 0 : _measure?.Favicons ?? 0);
+
+    private long SettingsBytes => (_measure?.Settings ?? 0) + (_options.IncludeSecrets ? 0 : _measure?.WebData ?? 0);
+
+    private long SecretsBytes => (_measure?.Secrets ?? 0) + (_options.IncludeSecrets ? (_measure?.WebData ?? 0) + (_measure?.WebSide ?? 0) : 0);
+
+    private string Show(long bytes) => _measure is null ? "…" : Format.Size(bytes);
 
     /// <summary>第一次选中这个用户时才读扩展，避免一打开就扫描所有用户的扩展大小。</summary>
     public void EnsureExtensions()
@@ -183,6 +269,7 @@ public sealed class ProfileEditor : ObservableObject
         }
         Raise(nameof(ExtensionCount));
         Raise(nameof(ExtensionSummary));
+        Raise(nameof(ExtensionSize));
     }
 
     public ProfileOptions ToOptions()
@@ -210,6 +297,7 @@ public sealed class ProfileEditor : ObservableObject
             Raise(nameof(IncludeExtensionData));
         }
         Raise(nameof(ExtensionSummary));
+        Raise(nameof(ExtensionSize));
         Changed();
     }
 
@@ -220,6 +308,7 @@ public sealed class ProfileEditor : ObservableObject
         store(all);
         Raise(name);
         Raise(nameof(ExtensionSummary));
+        Raise(nameof(ExtensionSize));
         Changed();
     }
 
