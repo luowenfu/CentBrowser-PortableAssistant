@@ -115,8 +115,6 @@ public sealed partial class PlanEditor
 
     public string PasswordCaption => PasswordLocked ? "设置解压密码（必填）" : "设置解压密码";
 
-    public bool PortableBrowser => _install?.IsPortable == true;
-
     public bool RequirePassword
     {
         get => PasswordLocked || _plan.RequirePassword;

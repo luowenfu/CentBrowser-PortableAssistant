@@ -261,12 +261,8 @@
             <HeaderedContentControl Style="{StaticResource StepCard}" Tag="3">
                 <HeaderedContentControl.Header>
                     <DockPanel>
-                        <TextBlock DockPanel.Dock="Right" Text="缓存和打开的标签页不会带走" Style="{StaticResource Mono}"
-                                   VerticalAlignment="Center" />
-                        <DockPanel Margin="0,0,16,0">
-                            <TextBlock DockPanel.Dock="Left" Text="内容" />
-                            <TextBlock Text="{Binding Title}" Foreground="{StaticResource Muted}" Margin="12,0,0,0" TextTrimming="CharacterEllipsis" />
-                        </DockPanel>
+                        <TextBlock DockPanel.Dock="Left" Text="内容" />
+                        <TextBlock Text="{Binding Title}" Foreground="{StaticResource Muted}" Margin="12,0,0,0" TextTrimming="CharacterEllipsis" />
                     </DockPanel>
                 </HeaderedContentControl.Header>
                 <StackPanel>
@@ -302,33 +298,7 @@
                         </StackPanel>
                         <StackPanel>
                             <CheckBox IsChecked="{Binding IncludeSecrets}" Content="本机机密" />
-                            <TextBlock>
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock" BasedOn="{StaticResource ItemHint}">
-                                        <Setter Property="Margin" Value="22,2,0,0" />
-                                        <Setter Property="TextWrapping" Value="NoWrap" />
-                                        <Setter Property="TextTrimming" Value="None" />
-                                        <Setter Property="Text" Value="密码和 Cookie" />
-                                        <Style.Triggers>
-                                            <MultiDataTrigger>
-                                                <MultiDataTrigger.Conditions>
-                                                    <Condition Binding="{Binding IncludeSecrets}" Value="True" />
-                                                    <Condition Binding="{Binding DataContext.PortableBrowser, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True" />
-                                                </MultiDataTrigger.Conditions>
-                                                <Setter Property="Text" Value="便携版可行" />
-                                            </MultiDataTrigger>
-                                            <MultiDataTrigger>
-                                                <MultiDataTrigger.Conditions>
-                                                    <Condition Binding="{Binding IncludeSecrets}" Value="True" />
-                                                    <Condition Binding="{Binding DataContext.PortableBrowser, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="False" />
-                                                </MultiDataTrigger.Conditions>
-                                                <Setter Property="Text" Value="安装版无效" />
-                                                <Setter Property="Foreground" Value="{StaticResource Danger}" />
-                                            </MultiDataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
+                            <TextBlock Text="密码和 Cookie" />
                             <TextBlock Style="{StaticResource ItemSize}" Text="{Binding SecretsSize}" />
                         </StackPanel>
                         <StackPanel>
