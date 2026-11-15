@@ -261,8 +261,13 @@
             <HeaderedContentControl Style="{StaticResource StepCard}" Tag="3">
                 <HeaderedContentControl.Header>
                     <DockPanel>
-                        <TextBlock DockPanel.Dock="Left" Text="内容" />
-                        <TextBlock Text="{Binding Title}" Foreground="{StaticResource Muted}" Margin="12,0,0,0" TextTrimming="CharacterEllipsis" />
+                        <TextBlock DockPanel.Dock="Right" Text="「本机机密」便携版带走可用；安装版仅本机可用" Style="{StaticResource Mono}"
+                                   VerticalAlignment="Center"
+                                   Visibility="{Binding IncludeSecrets, Converter={StaticResource Vis}}" />
+                        <DockPanel Margin="0,0,16,0">
+                            <TextBlock DockPanel.Dock="Left" Text="内容" />
+                            <TextBlock Text="{Binding Title}" Foreground="{StaticResource Muted}" Margin="12,0,0,0" TextTrimming="CharacterEllipsis" />
+                        </DockPanel>
                     </DockPanel>
                 </HeaderedContentControl.Header>
                 <StackPanel>
