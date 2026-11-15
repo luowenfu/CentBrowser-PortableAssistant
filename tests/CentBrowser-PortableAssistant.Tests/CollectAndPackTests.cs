@@ -1,5 +1,6 @@
 using System.Text.Json.Nodes;
 using CentBrowser_PortableAssistant.Core.Backup;
+using Microsoft.Data.Sqlite;
 using CentBrowser_PortableAssistant.Core.Browser;
 using CentBrowser_PortableAssistant.Core.Settings;
 
@@ -98,6 +99,12 @@ public sealed class CollectAndPackTests : IDisposable
         Assert.Equal(0, new FileInfo(S("User Data/First Run")).Length);
         Assert.Equal("1.2.3.4", File.ReadAllText(S("User Data/Last Version")));
         Assert.True(File.Exists(S("User Data/Profile 1/Bookmarks")));
+        Assert.True(File.Exists(S("User Data/Profile 1/Favicons")));
+        Assert.True(File.Exists(S("User Data/Profile 1/Local Storage/leveldb/000003.log")));
+        Assert.True(File.Exists(S("User Data/Profile 1/Web Data")));
+        Assert.Equal(1, CountRows(S("User Data/Profile 1/Web Data"), "keywords"));
+        Assert.Equal(0, CountRows(S("User Data/Profile 1/Web Data"), "autofill"));
+        Assert.Equal(0, CountRows(S("User Data/Profile 1/Web Data"), "token_service"));
         Assert.True(File.Exists(S("User Data/Profile 1/Google Profile Picture.png")));
         Assert.True(File.Exists(S("User Data/Profile 1/Accounts/Avatar Images/123")));
         Assert.False(File.Exists(S("User Data/Profile 1/Account Web Data")));
@@ -110,7 +117,7 @@ public sealed class CollectAndPackTests : IDisposable
         Assert.False(Directory.Exists(S("User Data/Profile 1/Extensions/bbbb")));
         Assert.False(Directory.Exists(S("User Data/Profile 1/Local Extension Settings/bbbb")));
         Assert.False(File.Exists(S("User Data/Profile 1/Local Extension Settings/aaaa/LOCK")));
-        foreach (var secret in new[] { "Login Data", "Web Data", "Network/Cookies", "Cache" })
+        foreach (var secret in new[] { "Login Data", "Network/Cookies", "Cache" })
         {
             Assert.False(File.Exists(S($"User Data/Profile 1/{secret}")) || Directory.Exists(S($"User Data/Profile 1/{secret}")), secret);
         }
@@ -123,6 +130,44 @@ public sealed class CollectAndPackTests : IDisposable
         var prefs = JsonNode.Parse(File.ReadAllText(S("User Data/Profile 1/Preferences")))!;
         var ids = prefs["extensions"]!["settings"]!.AsObject().Select(kv => kv.Key).ToList();
         Assert.Equal(["aaaa", "pdf"], ids);
+    }
+
+    [Fact]
+    public void SecretsKeepMachineKeyAndFullWebData()
+    {
+        var plan = OnlyProfile1WithAlpha();
+        plan.Profiles["Profile 1"].IncludeSecrets = true;
+        var profiles = CollectPlanner.SelectedProfiles(_browser.Install, plan);
+        var items = CollectPlanner.Plan(_browser.Install, plan, profiles);
+        Collector.Collect(_browser.Install, plan, profiles, items, _staging, CancellationToken.None);
+
+        string S(string rel) => Path.Combine(_staging, "CentBrowser", rel);
+        Assert.True(File.Exists(S("User Data/Profile 1/Login Data")));
+        Assert.True(File.Exists(S("User Data/Profile 1/Network/Cookies")));
+        Assert.True(File.Exists(S("User Data/Profile 1/Account Web Data")));
+        Assert.Equal(1, CountRows(S("User Data/Profile 1/Web Data"), "autofill"));
+        Assert.Equal(1, CountRows(S("User Data/Profile 1/Web Data"), "keywords"));
+
+        var localState = JsonNode.Parse(File.ReadAllText(S("User Data/Local State")))!;
+        Assert.Equal("k", localState["os_crypt"]!["encrypted_key"]!.GetValue<string>());
+    }
+
+    [Fact]
+    public void EmptyPasswordIsAllowedUntilSecretsAreSelected()
+    {
+        var plan = new BackupPlan { RequirePassword = false, ProfileDirs = ["Profile 1"] };
+        Assert.False(plan.NeedsArchivePassword());
+        plan.Profiles["Profile 1"] = new ProfileOptions { IncludeSecrets = true };
+        Assert.True(plan.NeedsArchivePassword());
+    }
+
+    private static long CountRows(string db, string table)
+    {
+        using var conn = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = db, Mode = SqliteOpenMode.ReadOnly, Pooling = false }.ConnectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = $"SELECT COUNT(*) FROM \"{table}\"";
+        return (long)cmd.ExecuteScalar()!;
     }
 
     [Fact]
@@ -222,6 +267,46 @@ public sealed class CollectAndPackTests : IDisposable
         {
             Directory.Delete(output, recursive: true);
         }
+    }
+
+    [Fact]
+    public async Task PacksWithoutPassword()
+    {
+        var plan = OnlyProfile1WithAlpha();
+        var profiles = CollectPlanner.SelectedProfiles(_browser.Install, plan);
+        Collector.Collect(_browser.Install, plan, profiles, CollectPlanner.Plan(_browser.Install, plan, profiles), _staging, CancellationToken.None);
+
+        var output = _staging + "-out";
+        var files = await Packer.PackAsync(_staging, output, "test", ArchiveFormats.SevenZip, ZipEncryption.Aes256, null, null, CancellationToken.None);
+        try
+        {
+            var archive = files.Single();
+            await SevenZipTool.RunAsync(["t", archive], null, null, CancellationToken.None);
+            var listing = await ListArchive(archive);
+            Assert.DoesNotContain("Encrypted = +", listing);
+        }
+        finally
+        {
+            Directory.Delete(output, recursive: true);
+        }
+    }
+
+    private static async Task<string> ListArchive(string archive)
+    {
+        SevenZipTool.EnsureExtracted();
+        var utf8 = new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        var psi = new System.Diagnostics.ProcessStartInfo(SevenZipTool.ExePath)
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            StandardOutputEncoding = utf8,
+        };
+        foreach (var a in new[] { "l", "-slt", archive }) psi.ArgumentList.Add(a);
+        using var proc = System.Diagnostics.Process.Start(psi)!;
+        var text = await proc.StandardOutput.ReadToEndAsync();
+        await proc.WaitForExitAsync();
+        return text;
     }
 
     [Fact]

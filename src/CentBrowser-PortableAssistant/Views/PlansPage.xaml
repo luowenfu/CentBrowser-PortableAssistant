@@ -263,7 +263,7 @@
                 <StackPanel>
                     <TextBlock x:Name="ContentHint" Style="{StaticResource Hint}" Foreground="{StaticResource Danger}" Margin="0,0,0,12"
                                Visibility="Collapsed" />
-                    <UniformGrid Columns="4">
+                    <UniformGrid Columns="6">
                         <UniformGrid.Resources>
                             <Style TargetType="TextBlock" BasedOn="{StaticResource ItemHint}">
                                 <Setter Property="Margin" Value="24,2,8,0" />
@@ -284,12 +284,46 @@
                             <TextBlock Text="主页、搜索、外观等" />
                         </StackPanel>
                         <StackPanel>
+                            <CheckBox IsChecked="{Binding IncludeSiteData}" Content="网站设置" />
+                            <TextBlock Text="各个网站的偏好和记录" />
+                        </StackPanel>
+                        <StackPanel>
+                            <CheckBox IsChecked="{Binding IncludeSecrets}" Content="本机机密" />
+                            <TextBlock>
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource ItemHint}">
+                                        <Setter Property="Margin" Value="24,2,8,0" />
+                                        <Setter Property="TextWrapping" Value="NoWrap" />
+                                        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                        <Setter Property="Text" Value="保存密码、Cookie、自动填充" />
+                                        <Style.Triggers>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding IncludeSecrets}" Value="True" />
+                                                    <Condition Binding="{Binding DataContext.PortableBrowser, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True" />
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Text" Value="目前为便携版，可以带走" />
+                                            </MultiDataTrigger>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding IncludeSecrets}" Value="True" />
+                                                    <Condition Binding="{Binding DataContext.PortableBrowser, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="False" />
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Text" Value="目前为安装版，带走后仍无效" />
+                                                <Setter Property="Foreground" Value="{StaticResource Danger}" />
+                                            </MultiDataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                        <StackPanel>
                             <CheckBox IsChecked="{Binding IncludeExtensions}" Content="扩展" />
                             <TextBlock Text="在第 4 步挑选" />
                         </StackPanel>
                     </UniformGrid>
                     <Border Background="{StaticResource Bg}" CornerRadius="8" Padding="12,8" Margin="0,12,0,0">
-                        <TextBlock Style="{StaticResource Hint}" Text="密码、Cookie、缓存、自动填充和打开的标签页不会带走" />
+                        <TextBlock Style="{StaticResource Hint}" Text="缓存和打开的标签页不会带走" />
                     </Border>
                 </StackPanel>
             </HeaderedContentControl>
@@ -425,8 +459,9 @@
                         <CheckBox IsChecked="{Binding AutoBackup}" Content="加入自动备份" />
                         <TextBlock Style="{StaticResource ItemHint}" Text="这个方案是否加入自动备份" Margin="24,2,0,0" />
 
-                        <TextBlock Text="解压密码" Style="{StaticResource Group}" />
-                        <DockPanel>
+                        <CheckBox Margin="0,20,0,8" Content="设置解压密码"
+                                  IsChecked="{Binding RequirePassword}" IsEnabled="{Binding PasswordEditable}" />
+                        <DockPanel Visibility="{Binding RequirePassword, Converter={StaticResource Vis}}">
                             <Button x:Name="RevealButton" DockPanel.Dock="Right" Style="{StaticResource QuietButton}" Content="显示" Margin="4,0,0,0"
                                     VerticalAlignment="Center" Click="OnReveal" />
                             <Grid>
@@ -435,7 +470,8 @@
                                          Text="{Binding Password, UpdateSourceTrigger=PropertyChanged}" />
                             </Grid>
                         </DockPanel>
-                        <TextBlock Style="{StaticResource Hint}" Margin="0,4,0,0" Text="忘了就解不开，请自己记好" />
+                        <TextBlock Style="{StaticResource Hint}" Margin="0,4,0,0" Text="忘了就解不开，请自己记好"
+                                   Visibility="{Binding RequirePassword, Converter={StaticResource Vis}}" />
 
                         <TextBlock Text="打包格式" Style="{StaticResource Group}" />
                         <Border Background="{StaticResource SurfaceStep}" CornerRadius="8" Padding="3">

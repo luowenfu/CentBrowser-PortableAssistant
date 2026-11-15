@@ -71,17 +71,19 @@ public sealed partial class PlanEditor
     public bool FormatZip => _plan.Formats == ArchiveFormats.Zip;
 
     /// <summary>当前格式下的那一行小字。zip 再跟着加密方式变。</summary>
-    public string FormatHint => _plan.Formats switch
+    public string FormatHint => (_plan.Formats, RequirePassword) switch
     {
-        ArchiveFormats.Sfx => "双击输密码就能解压，无需压缩软件",
-        ArchiveFormats.SevenZip => "体积最小，要用 7-Zip 或 Bandizip 解压",
-        ArchiveFormats.Zip when _plan.ZipEncryption == CentBrowser_PortableAssistant.Core.Settings.ZipEncryption.ZipCrypto => "兼容性好，但安全性很弱",
-        ArchiveFormats.Zip => "安全，但 Windows 自带解压打不开",
+        (ArchiveFormats.Sfx, false) => "双击就能解压，无需压缩软件",
+        (ArchiveFormats.Sfx, true) => "双击输密码就能解压，无需压缩软件",
+        (ArchiveFormats.SevenZip, _) => "体积最小，要用 7-Zip 或 Bandizip 解压",
+        (ArchiveFormats.Zip, false) => "兼容性好，Windows 自带解压也能开",
+        (ArchiveFormats.Zip, true) when _plan.ZipEncryption == CentBrowser_PortableAssistant.Core.Settings.ZipEncryption.ZipCrypto => "兼容性好，但安全性很弱",
+        (ArchiveFormats.Zip, true) => "安全，但 Windows 自带解压打不开",
         _ => "",
     };
 
     public bool FormatHintDanger =>
-        _plan.Formats == ArchiveFormats.Zip && _plan.ZipEncryption == CentBrowser_PortableAssistant.Core.Settings.ZipEncryption.ZipCrypto;
+        RequirePassword && _plan.Formats == ArchiveFormats.Zip && _plan.ZipEncryption == CentBrowser_PortableAssistant.Core.Settings.ZipEncryption.ZipCrypto;
 
     public CentBrowser_PortableAssistant.Core.Settings.ZipEncryption ZipEncryption
     {
@@ -99,6 +101,25 @@ public sealed partial class PlanEditor
     {
         get => _password;
         set { _password = value; Changed(); }
+    }
+
+    /// <summary>勾了本机机密时解压密码不能关。</summary>
+    public bool PasswordLocked => Profiles.Any(p => p.IsChecked && p.IncludeSecrets);
+
+    public bool PasswordEditable => !PasswordLocked;
+
+    public bool PortableBrowser => _install?.IsPortable == true;
+
+    public bool RequirePassword
+    {
+        get => PasswordLocked || _plan.RequirePassword;
+        set
+        {
+            if (PasswordLocked || _plan.RequirePassword == value) return;
+            _plan.RequirePassword = value;
+            Changed();
+            RaiseHint();
+        }
     }
 
     public string NameTemplateText
@@ -202,9 +223,9 @@ public sealed partial class PlanEditor
     {
         get
         {
-            if (string.IsNullOrEmpty(_password)) return "还没设置解压密码";
+            if (RequirePassword && string.IsNullOrEmpty(_password)) return "还没设置解压密码";
             if (_plan.Formats == ArchiveFormats.None) return "至少选一种打包格式";
-            if (FormatZip && !Packer.IsZipSafePassword(_password)) return Packer.ZipPasswordRule;
+            if (RequirePassword && FormatZip && !Packer.IsZipSafePassword(_password)) return Packer.ZipPasswordRule;
             if (Profiles.Count > 0 && !Profiles.Any(p => p.IsChecked)) return "至少选一个用户";
             if (!Targets.Any(t => t.IsChecked)) return _hiddenTargets.Count > 0 ? "选中的目的地都停用了" : "至少选一个目的地";
             if (Targets.FirstOrDefault(t => t.IsChecked && UploaderFactory.IsBlankLocation(t.Tip)) is { } missing)

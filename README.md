@@ -2,9 +2,9 @@
 
 > 一句话：带走浏览器，换台电脑解压就能用
 
-把 Cent Browser 浏览器的用户书签、历史、设置和扩展，按你的选择打成带密码的自解压 exe 或压缩包，送到 SMB、WebDAV、FTP 或本地文件夹。带走浏览器，换一台电脑解压就能用。
+把 Cent Browser 浏览器的用户书签、历史、设置、网站数据和扩展，按你的选择打成自解压 exe 或压缩包，送到 SMB、WebDAV、FTP 或本地文件夹。带走浏览器，换一台电脑解压就能用。
 
-浏览器保存的密码、Cookie、缓存和自动填充不会带走。打开自动备份并设好内容后，浏览器空闲时会在后台默默备好，不必再管，也几乎不占资源。
+密码、Cookie 和自动填充默认不带。便携版勾上后可以换电脑用，安装版用了 Windows 加密，换电脑读不了。缓存和打开的标签页不会带走。打开自动备份并设好内容后，浏览器空闲时会在后台默默备好，不必再管，也几乎不占资源。
 
 也能当瘦身、提取工具用：缓存这些累赘都留在原地，包一下子就轻了 ～(´▽｀)
 
@@ -69,4 +69,5 @@
 
 - [7-Zip](https://www.7-zip.org/) 25.01，GNU LGPL，见 `third_party/7zip/License.txt`
 - [FluentFTP](https://github.com/robinrodricks/FluentFTP)，MIT
+- [Microsoft.Data.Sqlite](https://github.com/dotnet/efcore) 8.0.11，MIT
 - [SharpVectors](https://github.com/ElinamLLC/SharpVectors) 1.8.6，BSD-3-Clause

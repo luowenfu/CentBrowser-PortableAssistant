@@ -16,14 +16,14 @@ public static class Packer
         string baseName,
         ArchiveFormats formats,
         ZipEncryption zipEncryption,
-        string password,
+        string? password,
         IProgress<int>? progress,
         CancellationToken ct,
         bool lowPriority = false)
     {
         if (formats == ArchiveFormats.None) throw new ArgumentException("至少选一种打包格式");
-        if (string.IsNullOrEmpty(password)) throw new ArgumentException("解压密码不能为空");
-        if (formats.HasFlag(ArchiveFormats.Zip) && !IsZipSafePassword(password)) throw new ArgumentException(ZipPasswordRule);
+        var locked = !string.IsNullOrEmpty(password);
+        if (locked && formats.HasFlag(ArchiveFormats.Zip) && !IsZipSafePassword(password!)) throw new ArgumentException(ZipPasswordRule);
         Directory.CreateDirectory(outputDir);
 
         var needSevenZip = formats.HasFlag(ArchiveFormats.SevenZip) || formats.HasFlag(ArchiveFormats.Sfx);
@@ -38,9 +38,11 @@ public static class Packer
         {
             var sevenZip = Path.Combine(outputDir, baseName + ".7z");
             File.Delete(sevenZip);
-            await SevenZipTool.RunAsync(
-                ["a", "-t7z", "-mx=5", "-mmt=on", "-mhe=on", sevenZip, source],
-                password, Step(), ct, lowPriority);
+            var sevenArgs = new List<string> { "a", "-t7z", "-mx=5", "-mmt=on" };
+            if (locked) sevenArgs.Add("-mhe=on");
+            sevenArgs.Add(sevenZip);
+            sevenArgs.Add(source);
+            await SevenZipTool.RunAsync(sevenArgs, locked ? password : null, Step(), ct, lowPriority);
             done++;
 
             if (formats.HasFlag(ArchiveFormats.Sfx))
@@ -57,10 +59,11 @@ public static class Packer
         {
             var zip = Path.Combine(outputDir, baseName + ".zip");
             File.Delete(zip);
-            var method = zipEncryption == ZipEncryption.Aes256 ? "-mem=AES256" : "-mem=ZipCrypto";
-            await SevenZipTool.RunAsync(
-                ["a", "-tzip", "-mx=5", "-mmt=on", method, zip, source],
-                password, Step(), ct, lowPriority);
+            var zipArgs = new List<string> { "a", "-tzip", "-mx=5", "-mmt=on" };
+            if (locked) zipArgs.Add(zipEncryption == ZipEncryption.Aes256 ? "-mem=AES256" : "-mem=ZipCrypto");
+            zipArgs.Add(zip);
+            zipArgs.Add(source);
+            await SevenZipTool.RunAsync(zipArgs, locked ? password : null, Step(), ct, lowPriority);
             outputs.Add(zip);
         }
 

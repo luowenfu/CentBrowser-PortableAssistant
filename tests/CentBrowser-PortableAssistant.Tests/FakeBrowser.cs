@@ -1,4 +1,5 @@
 using CentBrowser_PortableAssistant.Core.Browser;
+using Microsoft.Data.Sqlite;
 
 namespace CentBrowser_PortableAssistant.Tests;
 
@@ -35,7 +36,9 @@ public sealed class FakeBrowser : IDisposable
         Write($"{d}/Bookmarks", "{}");
         Write($"{d}/History", "sqlite");
         Write($"{d}/Login Data", "passwords");
-        Write($"{d}/Web Data", "autofill");
+        WriteWebData($"{d}/Web Data");
+        Write($"{d}/Favicons", "icons");
+        Write($"{d}/Local Storage/leveldb/000003.log", "site");
         Write($"{d}/Network/Cookies", "cookies");
         Write($"{d}/Google Profile Picture.png", "png");
         Write($"{d}/Accounts/Avatar Images/123", "png");
@@ -57,6 +60,24 @@ public sealed class FakeBrowser : IDisposable
         Write($"{d}/Local Extension Settings/bbbb/000003.log", "ext-data-b");
     }
 
+    private void WriteWebData(string rel)
+    {
+        var path = Path.Combine(Root, rel);
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        using var conn = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = path, Pooling = false }.ConnectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = """
+            CREATE TABLE keywords(id INTEGER PRIMARY KEY, keyword TEXT, url TEXT);
+            CREATE TABLE autofill(name TEXT, value TEXT);
+            CREATE TABLE token_service(service TEXT, encrypted_token BLOB);
+            INSERT INTO keywords(keyword, url) VALUES ('bd', 'https://www.baidu.com/s?wd={searchTerms}');
+            INSERT INTO autofill(name, value) VALUES ('email', 'a@b.c');
+            INSERT INTO token_service(service, encrypted_token) VALUES ('oauth', X'0102');
+            """;
+        cmd.ExecuteNonQuery();
+    }
+
     public void Write(string rel, string content)
     {
         var path = Path.Combine(Root, rel);
@@ -66,6 +87,7 @@ public sealed class FakeBrowser : IDisposable
 
     public void Dispose()
     {
+        SqliteConnection.ClearAllPools();
         if (Directory.Exists(Root)) Directory.Delete(Root, recursive: true);
     }
 }

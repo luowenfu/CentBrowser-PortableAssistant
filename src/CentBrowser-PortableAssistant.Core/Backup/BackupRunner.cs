@@ -11,9 +11,12 @@ public sealed class BackupRunner(HistoryStore history, UploadQueue queue)
     public static string? Validate(BackupPlan plan, AppConfig config, BrowserInstall? install = null)
     {
         var password = SecretProtector.Unprotect(plan.PasswordProtected);
-        if (string.IsNullOrEmpty(password)) return $"“{plan.Name}”还没设置解压密码";
+        if (plan.NeedsArchivePassword())
+        {
+            if (string.IsNullOrEmpty(password)) return $"“{plan.Name}”还没设置解压密码";
+            if (plan.Formats.HasFlag(ArchiveFormats.Zip) && !Packer.IsZipSafePassword(password)) return Packer.ZipPasswordRule;
+        }
         if (plan.Formats == ArchiveFormats.None) return $"“{plan.Name}”至少要选一种打包格式";
-        if (plan.Formats.HasFlag(ArchiveFormats.Zip) && !Packer.IsZipSafePassword(password)) return Packer.ZipPasswordRule;
         if (!plan.AllProfiles && plan.ProfileDirs.Count == 0) return $"“{plan.Name}”没有选用户";
         var selected = plan.TargetIds
             .Select(id => config.Targets.FirstOrDefault(t => t.Id == id))
@@ -88,8 +91,9 @@ public sealed class BackupRunner(HistoryStore history, UploadQueue queue)
                 : new Progress<int>(p => progress.Report(new BackupStatus(plan.Name, BackupStage.Collecting, p)));
             var collected = await CollectAsync(install, plan, profiles, items, Path.Combine(staging, baseName), ct, browserStarted, collectProgress);
             var packProgress = new Progress<int>(p => progress?.Report(new BackupStatus(plan.Name, BackupStage.Packing, p)));
+            var archivePassword = plan.NeedsArchivePassword() ? SecretProtector.Unprotect(plan.PasswordProtected) : null;
             var files = await Packer.PackAsync(staging, outputDir, baseName, plan.Formats, plan.ZipEncryption,
-                SecretProtector.Unprotect(plan.PasswordProtected), packProgress, ct, lowPriority);
+                archivePassword, packProgress, ct, lowPriority);
 
             var targetIds = plan.TargetIds.Where(id => config.Targets.Any(t => t.Id == id && !t.Disabled)).ToList();
             if (targetIds.Count == 0) throw new BackupException($"“{plan.Name}”的目的地都停用了");

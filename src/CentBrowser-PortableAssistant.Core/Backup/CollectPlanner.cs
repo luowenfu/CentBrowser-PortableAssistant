@@ -3,7 +3,7 @@ using CentBrowser_PortableAssistant.Core.Settings;
 
 namespace CentBrowser_PortableAssistant.Core.Backup;
 
-/// <summary>按方案算出要带走的文件清单。缓存、密码、Cookie 不在任何白名单里，天然被排除。</summary>
+/// <summary>按方案算出要带走的文件清单。缓存和打开的标签页不在白名单里，密码和 Cookie 只在勾了本机机密时加入。</summary>
 public static class CollectPlanner
 {
     public const string RootFolder = "CentBrowser";
@@ -48,6 +48,17 @@ public static class CollectPlanner
             Add(ProfilePaths.AvatarImages);
             if (o.IncludeBookmarks) foreach (var f in ProfilePaths.Bookmarks) Add(f);
             if (o.IncludeHistory) foreach (var f in ProfilePaths.History) Add(f);
+            if (o.IncludeBookmarks || o.IncludeHistory) foreach (var f in ProfilePaths.Favicons) Add(f);
+            if (o.IncludeSiteData) Add(ProfilePaths.LocalStorage);
+
+            if (o.IncludeSettings || o.IncludeSecrets)
+                Add(ProfilePaths.WebData, o.IncludeSecrets ? CollectKind.Copy : CollectKind.SearchEngines);
+            if (o.IncludeSecrets)
+            {
+                Add(ProfilePaths.WebData + "-journal");
+                Add(ProfilePaths.WebData + "-wal");
+                foreach (var f in ProfilePaths.Secrets) Add(f);
+            }
 
             // 扩展登记在 Preferences 里，只带扩展不带设置时也要一份精简过的 Preferences
             if (o.IncludeSettings || o.IncludeExtensions)

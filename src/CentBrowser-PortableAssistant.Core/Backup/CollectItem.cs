@@ -8,6 +8,8 @@ public enum CollectKind
     LocalState,
     /// <summary>Preferences 或 Secure Preferences，复制时去掉未选的扩展。</summary>
     Preferences,
+    /// <summary>Web Data，只留搜索引擎，清掉自动填充、支付和令牌。</summary>
+    SearchEngines,
     /// <summary>空的便携标记文件。</summary>
     PortableMarker,
     /// <summary>空的 First Run，表示这套用户数据已经启动过。</summary>

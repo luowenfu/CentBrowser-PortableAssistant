@@ -81,6 +81,24 @@ public sealed class ProfileEditor : ObservableObject
         set { _options.IncludeSettings = value; Changed(); }
     }
 
+    public bool IncludeSiteData
+    {
+        get => _options.IncludeSiteData;
+        set { _options.IncludeSiteData = value; Changed(); }
+    }
+
+    public bool IncludeSecrets
+    {
+        get => _options.IncludeSecrets;
+        set
+        {
+            if (_options.IncludeSecrets == value) return;
+            _options.IncludeSecrets = value;
+            Raise(nameof(IncludeSecrets));
+            Changed();
+        }
+    }
+
     public bool IncludeExtensions
     {
         get => _options.IncludeExtensions;

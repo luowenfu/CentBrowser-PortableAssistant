@@ -124,6 +124,7 @@ public sealed partial class PlanEditor : ObservableObject
         p.ProfileDirs = Profiles.Where(i => i.IsChecked).Select(i => i.Key).ToList();
         foreach (var profile in Profiles) p.Profiles[profile.Key] = profile.ToOptions();
         p.TargetIds = Targets.Where(i => i.IsChecked).Select(i => i.Key).Concat(_hiddenTargets).Distinct().ToList();
+        if (Profiles.Any(i => i.IsChecked && i.IncludeSecrets)) p.RequirePassword = true;
         p.PasswordProtected = SecretProtector.Protect(_password);
         if (string.IsNullOrWhiteSpace(p.Slug)) p.Slug = NameTemplate.MakeSlug(p.Name);
         return p;
@@ -141,6 +142,10 @@ public sealed partial class PlanEditor : ObservableObject
             Raise(nameof(AllProfiles));
         }
         Changed(null);
+        Raise(nameof(PasswordLocked));
+        Raise(nameof(PasswordEditable));
+        Raise(nameof(RequirePassword));
+        RaiseHint();
     }
 
     private void Changed([System.Runtime.CompilerServices.CallerMemberName] string? name = null)

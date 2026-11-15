@@ -41,8 +41,24 @@ public static class Collector
                     tracker?.Advance(Encoding.UTF8.GetByteCount(install.Version));
                     break;
                 case CollectKind.LocalState:
-                    WriteJson(item.Source, dest, n => JsonTrimmer.TrimLocalState(n, profiles, install.Version));
+                    var keepKey = profiles.Any(dir => plan.OptionsFor(dir).IncludeSecrets);
+                    WriteJson(item.Source, dest, n => JsonTrimmer.TrimLocalState(n, profiles, install.Version, keepKey));
                     tracker?.Advance(FileSize(item.Source));
+                    break;
+                case CollectKind.SearchEngines:
+                    bytes += CopyFile(item.Source, dest, ct, tracker);
+                    foreach (var ext in new[] { "-wal", "-journal", "-shm" })
+                    {
+                        var side = item.Source + ext;
+                        if (!File.Exists(side)) continue;
+                        bytes += CopyFile(side, dest + ext, ct, tracker);
+                    }
+                    WebDataTrimmer.KeepSearchEngines(dest);
+                    foreach (var ext in new[] { "-wal", "-journal", "-shm" })
+                    {
+                        var side = dest + ext;
+                        if (File.Exists(side)) File.Delete(side);
+                    }
                     break;
                 case CollectKind.Preferences:
                     var profileDir = Path.GetDirectoryName(item.Source)!;
@@ -74,7 +90,7 @@ public static class Collector
             total += item.Kind switch
             {
                 CollectKind.LastVersion => Encoding.UTF8.GetByteCount(install.Version),
-                CollectKind.LocalState or CollectKind.Preferences => FileSize(item.Source),
+                CollectKind.LocalState or CollectKind.Preferences or CollectKind.SearchEngines => FileSize(item.Source),
                 CollectKind.PortableMarker or CollectKind.FirstRun => 0,
                 _ => Directory.Exists(item.Source) ? DirSize(item.Source, ct) : FileSize(item.Source),
             };

@@ -5,7 +5,23 @@ public static class ProfilePaths
 {
     public static readonly string[] Bookmarks = ["Bookmarks"];
 
-    public static readonly string[] History = ["History", "Favicons", "Top Sites", "Visited Links", "Shortcuts"];
+    public static readonly string[] History = ["History", "Top Sites", "Visited Links", "Shortcuts"];
+
+    /// <summary>书签和历史共用的网站图标。</summary>
+    public static readonly string[] Favicons = ["Favicons", "Favicons-journal"];
+
+    public const string LocalStorage = "Local Storage";
+
+    /// <summary>密码、Cookie、账号自动填充。Web Data 另算，因为设置项也要用它的搜索引擎。</summary>
+    public static readonly string[] Secrets =
+    [
+        "Login Data", "Login Data-journal", "Login Data-wal",
+        "Login Data For Account", "Login Data For Account-journal",
+        Path.Combine("Network", "Cookies"), Path.Combine("Network", "Cookies-journal"), Path.Combine("Network", "Cookies-wal"),
+        "Account Web Data", "Account Web Data-journal",
+    ];
+
+    public const string WebData = "Web Data";
 
     public const string Preferences = "Preferences";
 

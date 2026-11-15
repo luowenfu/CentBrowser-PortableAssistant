@@ -34,6 +34,14 @@ public class JsonTrimmerTests
         Assert.Contains("\"profiles_order\":[\"Profile 1\"]", result.ToJsonString(new System.Text.Json.JsonSerializerOptions()));
     }
 
+    [Fact]
+    public void LocalStateKeepsMachineKeyWhenAsked()
+    {
+        var node = JsonNode.Parse("""{ "os_crypt": { "encrypted_key": "secret" } }""")!;
+        var result = JsonTrimmer.TrimLocalState(node, ["Profile 1"], "1.2.3.4", keepOsCrypt: true).AsObject();
+        Assert.Equal("secret", result["os_crypt"]!["encrypted_key"]!.GetValue<string>());
+    }
+
     private static JsonNode Prefs() => JsonNode.Parse("""
         {
           "homepage": "https://example.com",

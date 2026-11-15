@@ -48,8 +48,19 @@ public sealed class BackupPlan
 
     public ZipEncryption ZipEncryption { get; set; } = ZipEncryption.Aes256;
 
+    /// <summary>为 true 时压缩包要解压密码。旧配置没有这个字段时仍要密码。</summary>
+    public bool RequirePassword { get; set; } = true;
+
     /// <summary>DPAPI 加密后的解压密码。</summary>
     public string PasswordProtected { get; set; } = "";
+
+    /// <summary>勾了本机机密，或者打开了「设置解压密码」，压缩包必须有密码。</summary>
+    public bool NeedsArchivePassword()
+    {
+        if (RequirePassword) return true;
+        IEnumerable<string> dirs = AllProfiles ? Profiles.Keys : ProfileDirs;
+        return dirs.Any(d => OptionsFor(d).IncludeSecrets);
+    }
 
     public string NameTemplate { get; set; } = NameTemplateDefaults.Template;
 

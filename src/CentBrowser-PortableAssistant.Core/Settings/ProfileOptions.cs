@@ -9,6 +9,12 @@ public sealed class ProfileOptions
 
     public bool IncludeSettings { get; set; } = true;
 
+    /// <summary>网站写在浏览器里的 Local Storage。</summary>
+    public bool IncludeSiteData { get; set; } = true;
+
+    /// <summary>密码、Cookie、自动填充。默认不带。</summary>
+    public bool IncludeSecrets { get; set; }
+
     public bool IncludeExtensions { get; set; } = true;
 
     /// <summary>为 true 时带上这个用户的全部扩展，忽略 ExtensionIds。</summary>
