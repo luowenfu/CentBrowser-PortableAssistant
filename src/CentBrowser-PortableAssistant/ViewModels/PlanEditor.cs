@@ -144,6 +144,7 @@ public sealed partial class PlanEditor : ObservableObject
         Changed(null);
         Raise(nameof(PasswordLocked));
         Raise(nameof(PasswordEditable));
+        Raise(nameof(PasswordCaption));
         Raise(nameof(RequirePassword));
         RaiseHint();
     }

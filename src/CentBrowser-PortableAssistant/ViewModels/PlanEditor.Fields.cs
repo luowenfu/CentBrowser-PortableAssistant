@@ -46,6 +46,11 @@ public sealed partial class PlanEditor
             foreach (var p in Profiles) p.IsChecked = value;
             _syncingProfiles = false;
             Changed();
+            Raise(nameof(PasswordLocked));
+            Raise(nameof(PasswordEditable));
+            Raise(nameof(PasswordCaption));
+            Raise(nameof(RequirePassword));
+            RaiseHint();
         }
     }
 
@@ -107,6 +112,8 @@ public sealed partial class PlanEditor
     public bool PasswordLocked => Profiles.Any(p => p.IsChecked && p.IncludeSecrets);
 
     public bool PasswordEditable => !PasswordLocked;
+
+    public string PasswordCaption => PasswordLocked ? "设置解压密码（必填）" : "设置解压密码";
 
     public bool PortableBrowser => _install?.IsPortable == true;
 
