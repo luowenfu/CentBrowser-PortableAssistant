@@ -261,8 +261,12 @@
             <HeaderedContentControl Style="{StaticResource StepCard}" Tag="3">
                 <HeaderedContentControl.Header>
                     <DockPanel>
-                        <TextBlock DockPanel.Dock="Left" Text="内容" />
-                        <TextBlock Text="{Binding Title}" Foreground="{StaticResource Muted}" Margin="12,0,0,0" TextTrimming="CharacterEllipsis" />
+                        <TextBlock DockPanel.Dock="Right" Text="缓存和打开的标签页不会带走" Style="{StaticResource Mono}"
+                                   VerticalAlignment="Center" />
+                        <DockPanel Margin="0,0,16,0">
+                            <TextBlock DockPanel.Dock="Left" Text="内容" />
+                            <TextBlock Text="{Binding Title}" Foreground="{StaticResource Muted}" Margin="12,0,0,0" TextTrimming="CharacterEllipsis" />
+                        </DockPanel>
                     </DockPanel>
                 </HeaderedContentControl.Header>
                 <StackPanel>
@@ -333,9 +337,6 @@
                             <TextBlock Style="{StaticResource ItemSize}" Text="{Binding ExtensionSize}" />
                         </StackPanel>
                     </UniformGrid>
-                    <Border Background="{StaticResource Bg}" CornerRadius="8" Padding="12,8" Margin="0,12,0,0">
-                        <TextBlock Style="{StaticResource Hint}" Text="缓存和打开的标签页不会带走" />
-                    </Border>
                 </StackPanel>
             </HeaderedContentControl>
 

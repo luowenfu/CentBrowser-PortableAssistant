@@ -66,27 +66,13 @@ public sealed class ProfileEditor : ObservableObject
     public bool IncludeBookmarks
     {
         get => _options.IncludeBookmarks;
-        set
-        {
-            if (_options.IncludeBookmarks == value) return;
-            _options.IncludeBookmarks = value;
-            Raise(nameof(BookmarkSize));
-            Raise(nameof(HistorySize));
-            Changed();
-        }
+        set { _options.IncludeBookmarks = value; Changed(); }
     }
 
     public bool IncludeHistory
     {
         get => _options.IncludeHistory;
-        set
-        {
-            if (_options.IncludeHistory == value) return;
-            _options.IncludeHistory = value;
-            Raise(nameof(BookmarkSize));
-            Raise(nameof(HistorySize));
-            Changed();
-        }
+        set { _options.IncludeHistory = value; Changed(); }
     }
 
     public bool IncludeSettings
@@ -109,8 +95,6 @@ public sealed class ProfileEditor : ObservableObject
             if (_options.IncludeSecrets == value) return;
             _options.IncludeSecrets = value;
             Raise(nameof(IncludeSecrets));
-            Raise(nameof(SettingsSize));
-            Raise(nameof(SecretsSize));
             Changed();
         }
     }
@@ -234,15 +218,13 @@ public sealed class ProfileEditor : ObservableObject
     private bool _sizesStarted;
     private ProfilePaths.ContentMeasure? _measure;
 
-    private bool IconsWithBookmarks => _options.IncludeBookmarks || !_options.IncludeHistory;
+    private long BookmarkBytes => (_measure?.Bookmarks ?? 0) + (_measure?.Favicons ?? 0);
 
-    private long BookmarkBytes => (_measure?.Bookmarks ?? 0) + (IconsWithBookmarks ? _measure?.Favicons ?? 0 : 0);
+    private long HistoryBytes => _measure?.History ?? 0;
 
-    private long HistoryBytes => (_measure?.History ?? 0) + (IconsWithBookmarks ? 0 : _measure?.Favicons ?? 0);
+    private long SettingsBytes => (_measure?.Settings ?? 0) + (_measure?.WebData ?? 0) + (_measure?.WebSide ?? 0);
 
-    private long SettingsBytes => (_measure?.Settings ?? 0) + (_options.IncludeSecrets ? 0 : _measure?.WebData ?? 0);
-
-    private long SecretsBytes => (_measure?.Secrets ?? 0) + (_options.IncludeSecrets ? (_measure?.WebData ?? 0) + (_measure?.WebSide ?? 0) : 0);
+    private long SecretsBytes => _measure?.Secrets ?? 0;
 
     private string Show(long bytes) => _measure is null ? "…" : Format.Size(bytes);
 

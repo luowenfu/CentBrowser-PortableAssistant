@@ -59,7 +59,7 @@ public static class ProfilePaths
         return new DirectoryInfo(path).EnumerateFiles("*", SearchOption.AllDirectories).Sum(f => f.Length);
     }
 
-    /// <summary>第 3 步六项各自的体积。图标先归书签，只有不带书签时才归历史。Web Data 先归设置，勾了本机机密才改归机密。</summary>
+    /// <summary>第 3 步六项各自的体积。图标固定归书签，Web Data 固定归浏览器设置。</summary>
     public readonly record struct ContentMeasure(
         long Bookmarks,
         long Favicons,
