@@ -39,7 +39,7 @@
         </Style>
         <Style x:Key="ItemSize" TargetType="TextBlock" BasedOn="{StaticResource Mono}">
             <Setter Property="FontSize" Value="11" />
-            <Setter Property="Margin" Value="22,1,0,0" />
+            <Setter Property="Margin" Value="24,2,0,0" />
             <Setter Property="TextWrapping" Value="NoWrap" />
         </Style>
         <!-- 嵌在灰槽里的切换块。选中用和主按钮一样的强调蓝 -->
@@ -273,45 +273,58 @@
                 <StackPanel>
                     <TextBlock x:Name="ContentHint" Style="{StaticResource Hint}" Foreground="{StaticResource Danger}" Margin="0,0,0,12"
                                Visibility="Collapsed" />
-                    <UniformGrid Columns="6">
-                        <UniformGrid.Resources>
+                    <Grid>
+                        <Grid.Resources>
                             <Style TargetType="TextBlock" BasedOn="{StaticResource ItemHint}">
-                                <Setter Property="Margin" Value="22,2,0,0" />
+                                <Setter Property="Margin" Value="24,2,0,0" />
                                 <Setter Property="TextWrapping" Value="NoWrap" />
                                 <Setter Property="TextTrimming" Value="None" />
                             </Style>
-                        </UniformGrid.Resources>
-                        <StackPanel>
+                        </Grid.Resources>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" MinWidth="16" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" MinWidth="16" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" MinWidth="16" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" MinWidth="16" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" MinWidth="16" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
                             <CheckBox IsChecked="{Binding IncludeBookmarks}" Content="书签" />
                             <TextBlock Text="收藏的网页" />
                             <TextBlock Style="{StaticResource ItemSize}" Text="{Binding BookmarkSize}" />
                         </StackPanel>
-                        <StackPanel>
+                        <StackPanel Grid.Column="2">
                             <CheckBox IsChecked="{Binding IncludeHistory}" Content="历史记录" />
                             <TextBlock Text="浏览记录" />
                             <TextBlock Style="{StaticResource ItemSize}" Text="{Binding HistorySize}" />
                         </StackPanel>
-                        <StackPanel>
+                        <StackPanel Grid.Column="4">
                             <CheckBox IsChecked="{Binding IncludeSettings}" Content="浏览器设置" />
                             <TextBlock Text="主页、外观等" />
                             <TextBlock Style="{StaticResource ItemSize}" Text="{Binding SettingsSize}" />
                         </StackPanel>
-                        <StackPanel>
+                        <StackPanel Grid.Column="6">
                             <CheckBox IsChecked="{Binding IncludeSiteData}" Content="网站设置" />
                             <TextBlock Text="各站偏好" />
                             <TextBlock Style="{StaticResource ItemSize}" Text="{Binding SiteDataSize}" />
                         </StackPanel>
-                        <StackPanel>
+                        <StackPanel Grid.Column="8">
                             <CheckBox IsChecked="{Binding IncludeSecrets}" Content="机密信息" />
                             <TextBlock Text="密码、Cookie等" />
                             <TextBlock Style="{StaticResource ItemSize}" Text="{Binding SecretsSize}" />
                         </StackPanel>
-                        <StackPanel>
+                        <StackPanel Grid.Column="10">
                             <CheckBox IsChecked="{Binding IncludeExtensions}" Content="扩展" />
                             <TextBlock Text="下一步选" />
                             <TextBlock Style="{StaticResource ItemSize}" Text="{Binding ExtensionSize}" />
                         </StackPanel>
-                    </UniformGrid>
+                    </Grid>
                 </StackPanel>
             </HeaderedContentControl>
 
