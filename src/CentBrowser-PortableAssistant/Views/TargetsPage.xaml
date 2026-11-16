@@ -189,12 +189,12 @@
                                         <TextBlock x:Name="AddressLabel" Text="地址" Style="{StaticResource FieldLabel}" />
                                         <DockPanel>
                                             <Button x:Name="BrowseButton" DockPanel.Dock="Right" Content="选择…" Margin="8,0,0,0" Click="OnBrowse" />
-                                            <TextBox x:Name="AddressBox" FontFamily="{StaticResource MonoFont}" />
+                                            <TextBox x:Name="AddressBox" FontFamily="{StaticResource MonoFont}" TextChanged="OnFormChanged" />
                                         </DockPanel>
                                     </StackPanel>
                                     <StackPanel x:Name="PortPanel" Grid.Column="1" Width="72" Margin="16,0,0,0" Visibility="Collapsed">
                                         <TextBlock Text="端口" Style="{StaticResource FieldLabel}" />
-                                        <TextBox x:Name="PortBox" FontFamily="{StaticResource MonoFont}" HorizontalContentAlignment="Center" />
+                                        <TextBox x:Name="PortBox" FontFamily="{StaticResource MonoFont}" HorizontalContentAlignment="Center" TextChanged="OnFormChanged" />
                                     </StackPanel>
                                     <StackPanel x:Name="SecurityPanel" Grid.Column="2" Margin="16,0,0,0" Visibility="Collapsed">
                                         <TextBlock Text="加密方式" Style="{StaticResource FieldLabel}" />
@@ -205,7 +205,7 @@
 
                                 <StackPanel x:Name="DirPanel" Margin="0,12,0,0" Visibility="Collapsed">
                                     <TextBlock x:Name="DirLabel" Text="远程目录" Style="{StaticResource FieldLabel}" />
-                                    <TextBox x:Name="DirBox" FontFamily="{StaticResource MonoFont}" />
+                                    <TextBox x:Name="DirBox" FontFamily="{StaticResource MonoFont}" TextChanged="OnFormChanged" />
                                     <TextBlock x:Name="DirHint" Style="{StaticResource Hint}" Margin="0,4,0,0" />
                                 </StackPanel>
 
@@ -218,15 +218,16 @@
                                         </Grid.ColumnDefinitions>
                                         <StackPanel>
                                             <TextBlock Text="用户名" Style="{StaticResource FieldLabel}" />
-                                            <TextBox x:Name="UserBox" />
+                                            <TextBox x:Name="UserBox" TextChanged="OnFormChanged" />
                                         </StackPanel>
                                         <StackPanel Grid.Column="2">
                                             <TextBlock Text="密码" Style="{StaticResource FieldLabel}" />
-                                            <PasswordBox x:Name="PassBox" />
+                                            <PasswordBox x:Name="PassBox" PasswordChanged="OnFormChanged" />
                                         </StackPanel>
                                     </Grid>
                                     <TextBlock x:Name="AuthHint" Style="{StaticResource Hint}" Margin="0,4,0,0" Text="坚果云等网盘要填“应用密码”，不是登录密码" />
-                                    <CheckBox x:Name="AnyCertBox" Margin="0,12,0,0" Content="接受自签名证书（只在自己搭的服务器上打开）" />
+                                    <CheckBox x:Name="AnyCertBox" Margin="0,12,0,0" Content="接受自签名证书（只在自己搭的服务器上打开）"
+                                              Checked="OnFormChanged" Unchecked="OnFormChanged" />
                                 </StackPanel>
 
                                 <DockPanel Margin="0,20,0,0">
