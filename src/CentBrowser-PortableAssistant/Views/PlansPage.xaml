@@ -180,7 +180,7 @@
         <!-- 五步 -->
         <Grid Grid.Row="1" x:Name="Body">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="312" />
+                <ColumnDefinition Width="264" />
                 <ColumnDefinition Width="12" />
                 <ColumnDefinition Width="*" MinWidth="480" />
                 <ColumnDefinition Width="12" />
@@ -301,7 +301,7 @@
                         </StackPanel>
                         <StackPanel Grid.Column="2">
                             <CheckBox IsChecked="{Binding IncludeHistory}" Content="历史记录" />
-                            <TextBlock Text="浏览记录" />
+                            <TextBlock Text="浏览的记录" />
                             <TextBlock Style="{StaticResource ItemSize}" Text="{Binding HistorySize}" />
                         </StackPanel>
                         <StackPanel Grid.Column="4">
@@ -311,12 +311,12 @@
                         </StackPanel>
                         <StackPanel Grid.Column="6">
                             <CheckBox IsChecked="{Binding IncludeSiteData}" Content="网站设置" />
-                            <TextBlock Text="各站偏好" />
+                            <TextBlock Text="各站偏好设置" />
                             <TextBlock Style="{StaticResource ItemSize}" Text="{Binding SiteDataSize}" />
                         </StackPanel>
                         <StackPanel Grid.Column="8">
                             <CheckBox IsChecked="{Binding IncludeSecrets}" Content="登录信息" />
-                            <TextBlock Text="密码、Cookie等" />
+                            <TextBlock Text="密码和、Cookie、自动填充" />
                             <TextBlock Style="{StaticResource ItemSize}" Text="{Binding SecretsSize}" />
                         </StackPanel>
                         <StackPanel Grid.Column="10">
