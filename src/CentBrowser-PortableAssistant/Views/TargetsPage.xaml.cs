@@ -15,13 +15,24 @@ public partial class TargetsPage : UserControl
         public Row(string id, string name, string kind, bool disabled)
         {
             Id = id;
-            Name = name;
+            _name = name;
             _kind = kind;
             _disabled = disabled;
         }
 
         public string Id { get; }
-        public string Name { get; }
+
+        private string _name;
+        public string Name
+        {
+            get => _name;
+            set
+            {
+                if (_name == value) return;
+                _name = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Name)));
+            }
+        }
 
         private string _kind;
         public string Kind
@@ -96,7 +107,16 @@ public partial class TargetsPage : UserControl
         TargetList.ItemsSource = rows;
         var index = rows.FindIndex(r => r.Id == selectId);
         TargetList.SelectedIndex = index >= 0 ? index : rows.Count > 0 ? 0 : -1;
-        Editor.Visibility = rows.Count > 0 ? Visibility.Visible : Visibility.Hidden;
+        var has = rows.Count > 0;
+        FormPanel.Visibility = has ? Visibility.Visible : Visibility.Collapsed;
+        EmptyPanel.Visibility = has ? Visibility.Collapsed : Visibility.Visible;
+        if (!has)
+        {
+            EditorTitle.Text = "设置";
+            EditorMeta.Text = "";
+            EditorMeta.Visibility = Visibility.Collapsed;
+            DisabledBox.Visibility = Visibility.Collapsed;
+        }
         _loading = false;
         ShowSelected();
     }
@@ -109,6 +129,7 @@ public partial class TargetsPage : UserControl
         {
             previous.Kind = KindLabelOf(previous.Id);
             previous.Disabled = DisabledOf(previous.Id);
+            previous.Name = NameOf(previous.Id);
         }
         ShowSelected();
     }
@@ -136,8 +157,8 @@ public partial class TargetsPage : UserControl
         };
         SecurityBox.SelectedIndex = Math.Max(ftpMode, 0);
         DisabledBox.IsChecked = _current.Disabled;
-        _loading = false;
         NameBox.Text = _current.Name;
+        _loading = false;
         RememberAddresses();
         PortBox.Text = _current.Port > 0 ? _current.Port.ToString() : "";
         DirBox.Text = _current.RemoteDir;
@@ -158,6 +179,7 @@ public partial class TargetsPage : UserControl
         if (TargetList.SelectedItem is not Row row) return;
         var kind = SelectedKind;
         row.Kind = UploadTarget.KindLabel(kind);
+        row.Name = ListName(NameBox.Text, row.Id);
         if (_current?.Id == row.Id) _current.Kind = kind;
         if (_draft?.Id == row.Id) _draft.Kind = kind;
     }
@@ -173,6 +195,39 @@ public partial class TargetsPage : UserControl
     {
         if (_draft?.Id == id) return _draft.Disabled;
         return App.Services.Config.Targets.FirstOrDefault(t => t.Id == id)?.Disabled == true;
+    }
+
+    private string NameOf(string id)
+    {
+        if (_draft?.Id == id) return $"{_draft.Name}（未保存）";
+        return App.Services.Config.Targets.FirstOrDefault(t => t.Id == id)?.Name ?? "";
+    }
+
+    private void OnNameChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_loading || !IsInitialized) return;
+        if (TargetList.SelectedItem is Row row)
+            row.Name = ListName(NameBox.Text, row.Id);
+        RefreshHeader();
+    }
+
+    /// <summary>列表里草稿要标出还没保存。名称为空时用类型顶上。</summary>
+    private string ListName(string typed, string id)
+    {
+        var name = typed.Trim();
+        if (name.Length == 0) name = UploadTarget.KindLabel(SelectedKind);
+        return _draft?.Id == id ? $"{name}（未保存）" : name;
+    }
+
+    private void RefreshHeader()
+    {
+        if (!IsInitialized || _current is null) return;
+        var name = NameBox.Text.Trim();
+        EditorTitle.Text = name.Length > 0 ? name : UploadTarget.KindLabel(SelectedKind);
+        var draft = _draft?.Id == _current.Id;
+        EditorMeta.Text = draft ? "未保存" : UploadTarget.KindLabel(SelectedKind);
+        EditorMeta.Visibility = Visibility.Visible;
+        DisabledBox.Visibility = Visibility.Visible;
     }
 
     private void OnDisabledChanged(object sender, RoutedEventArgs e)
@@ -222,6 +277,7 @@ public partial class TargetsPage : UserControl
             TargetKind.WebDav => ("WebDAV 地址", "坚果云：https://dav.jianguoyun.com/dav/\nNextcloud：https://域名/remote.php/dav/files/用户名/\n要存到子目录就接在后面，子目录要已经存在"),
             _ => ("服务器", "主机名或 IP，例如 192.168.1.10，不要带 ftp://"),
         };
+        RefreshHeader();
     }
 
     /// <summary>打开一条时，只给当前类型留下地址，另外三种是空的。</summary>

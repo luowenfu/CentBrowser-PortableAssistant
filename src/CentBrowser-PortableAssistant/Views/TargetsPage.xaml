@@ -13,6 +13,17 @@
             <Setter Property="Background" Value="{StaticResource StepHead}" />
             <Setter Property="CornerRadius" Value="11,11,0,0" />
         </Style>
+        <!-- 没字时不占高度，否则按钮下面会空出一行 -->
+        <Style x:Key="StatusLine" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Margin" Value="0,8,0,0" />
+            <Style.Triggers>
+                <Trigger Property="Text" Value="">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
         <!-- 内容区始终让出滚动条的宽度，条本身只在超出时出现，选 FTP 不会把字段挤一下 -->
         <Style x:Key="FormScroll" TargetType="ScrollViewer">
             <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
@@ -96,11 +107,9 @@
                         <TextBlock Text="目的地" FontSize="14" VerticalAlignment="Center" />
                     </DockPanel>
                 </Border>
-                <StackPanel DockPanel.Dock="Bottom" Margin="16,8,16,16">
-                    <TextBlock Style="{StaticResource Hint}" HorizontalAlignment="Center" TextAlignment="Center"
-                               Text="备份先在本地打好包，再送到目的地" />
-                    <TextBlock Style="{StaticResource Hint}" HorizontalAlignment="Center" TextAlignment="Center" Margin="0,2,0,0"
-                               Text="断网时留在本地，网络恢复后自动重传" />
+                <StackPanel DockPanel.Dock="Bottom" Margin="16,4,16,16">
+                    <TextBlock Style="{StaticResource Hint}" Text="备份先在本地打好包，再送到目的地" />
+                    <TextBlock Style="{StaticResource Hint}" Margin="0,2,0,0" Text="断网时留在本地，网络恢复后自动重传" />
                 </StackPanel>
                 <ListBox x:Name="TargetList" Style="{StaticResource PlainList}" ItemContainerStyle="{StaticResource RowItem}"
                          Margin="8,8,8,8" SelectionChanged="OnSelected">
@@ -108,7 +117,8 @@
                         <DataTemplate>
                             <StackPanel Margin="0,4">
                                 <TextBlock x:Name="Title" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
-                                <TextBlock Text="{Binding KindLine}" Style="{StaticResource Mono}" Margin="0,2,0,0" />
+                                <TextBlock Text="{Binding KindLine}" Style="{StaticResource Hint}" Margin="0,2,0,0"
+                                           TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
                             </StackPanel>
                             <DataTemplate.Triggers>
                                 <DataTrigger Binding="{Binding Disabled}" Value="True">
@@ -121,133 +131,117 @@
             </DockPanel>
         </Border>
 
-        <Grid Grid.Column="2">
-            <Border>
-                <Border.Style>
-                    <Style TargetType="Border" BasedOn="{StaticResource SectionCard}">
-                        <Setter Property="Visibility" Value="Collapsed" />
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding Visibility, ElementName=Editor}" Value="Hidden">
-                                <Setter Property="Visibility" Value="Visible" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Border.Style>
-                <DockPanel>
-                    <Border DockPanel.Dock="Top" Style="{StaticResource SectionHead}">
-                        <DockPanel Margin="16,12" MinHeight="24">
-                            <TextBlock Text="设置" FontSize="14" VerticalAlignment="Center" />
-                        </DockPanel>
-                    </Border>
-                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="24">
+        <Border x:Name="Editor" Grid.Column="2" Style="{StaticResource SectionCard}">
+            <DockPanel>
+                <Border DockPanel.Dock="Top" Style="{StaticResource SectionHead}">
+                    <DockPanel Margin="16,12" MinHeight="24">
+                        <TextBlock x:Name="EditorMeta" DockPanel.Dock="Right" FontSize="12"
+                                   Foreground="{StaticResource Muted}" VerticalAlignment="Center" Margin="16,0,0,0" />
+                        <CheckBox x:Name="DisabledBox" DockPanel.Dock="Right" Content="停用" FontSize="12"
+                                  VerticalAlignment="Center" Checked="OnDisabledChanged" Unchecked="OnDisabledChanged" />
+                        <TextBlock x:Name="EditorTitle" Text="设置" FontSize="14" VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis" />
+                    </DockPanel>
+                </Border>
+
+                <Grid>
+                    <StackPanel x:Name="EmptyPanel" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="24"
+                                Visibility="Collapsed">
                         <TextBlock Text="还没有目的地" FontSize="14" HorizontalAlignment="Center" />
                         <TextBlock Style="{StaticResource Hint}" Margin="0,4,0,0" HorizontalAlignment="Center" TextAlignment="Center"
                                    Text="在左边点添加" />
-                        <TextBlock Style="{StaticResource Hint}" Margin="0,2,0,0" HorizontalAlignment="Center" TextAlignment="Center"
-                                   Text="备份会先在本地打好包，再送到这里" />
                     </StackPanel>
-                </DockPanel>
-            </Border>
 
-            <Border x:Name="Editor" Style="{StaticResource SectionCard}">
-                <DockPanel>
-                    <Border DockPanel.Dock="Top" Style="{StaticResource SectionHead}">
-                        <DockPanel Margin="16,12" MinHeight="24">
-                            <TextBlock Text="设置" FontSize="14" VerticalAlignment="Center" />
-                        </DockPanel>
-                    </Border>
+                    <DockPanel x:Name="FormPanel">
+                        <ScrollViewer Style="{StaticResource FormScroll}">
+                            <StackPanel Margin="16,16,16,16">
+                                <TextBlock Text="类型" Style="{StaticResource FieldLabel}" />
+                                <Border Background="{StaticResource SurfaceStep}" CornerRadius="8" Padding="3">
+                                    <ListBox x:Name="KindBox" SelectionChanged="OnKindChanged"
+                                             Background="Transparent" BorderThickness="0" Padding="0"
+                                             Foreground="{StaticResource Text2}"
+                                             HorizontalContentAlignment="Stretch"
+                                             ItemContainerStyle="{StaticResource KindSegment}">
+                                        <ListBox.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <UniformGrid Columns="4" />
+                                            </ItemsPanelTemplate>
+                                        </ListBox.ItemsPanel>
+                                        <ListBox.Template>
+                                            <ControlTemplate TargetType="ListBox">
+                                                <ItemsPresenter />
+                                            </ControlTemplate>
+                                        </ListBox.Template>
+                                    </ListBox>
+                                </Border>
 
-                    <ScrollViewer Style="{StaticResource FormScroll}">
-                        <StackPanel Margin="16,16,16,4">
-                            <TextBlock Text="类型" Style="{StaticResource FieldLabel}" />
-                            <Border Background="{StaticResource SurfaceStep}" CornerRadius="8" Padding="3">
-                                <ListBox x:Name="KindBox" SelectionChanged="OnKindChanged"
-                                         Background="Transparent" BorderThickness="0" Padding="0"
-                                         Foreground="{StaticResource Text2}"
-                                         HorizontalContentAlignment="Stretch"
-                                         ItemContainerStyle="{StaticResource KindSegment}">
-                                    <ListBox.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <UniformGrid Columns="4" />
-                                        </ItemsPanelTemplate>
-                                    </ListBox.ItemsPanel>
-                                    <ListBox.Template>
-                                        <ControlTemplate TargetType="ListBox">
-                                            <ItemsPresenter />
-                                        </ControlTemplate>
-                                    </ListBox.Template>
-                                </ListBox>
-                            </Border>
+                                <TextBlock Text="名称" Style="{StaticResource FieldLabel}" Margin="0,20,0,4" />
+                                <TextBox x:Name="NameBox" TextChanged="OnNameChanged" />
 
-                            <TextBlock Text="目的地名称" Style="{StaticResource FieldLabel}" Margin="0,12,0,4" />
-                            <DockPanel>
-                                <CheckBox x:Name="DisabledBox" DockPanel.Dock="Right" Content="停用" Margin="12,0,0,0"
-                                          VerticalAlignment="Center" Checked="OnDisabledChanged" Unchecked="OnDisabledChanged" />
-                                <TextBox x:Name="NameBox" />
-                            </DockPanel>
+                                <!-- 端口和加密方式只在 FTP 出现，贴在服务器右边；其他类型这两列不占位 -->
+                                <Grid Margin="0,20,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock x:Name="AddressLabel" Text="地址" Style="{StaticResource FieldLabel}" />
+                                        <DockPanel>
+                                            <Button x:Name="BrowseButton" DockPanel.Dock="Right" Content="选择…" Margin="8,0,0,0" Click="OnBrowse" />
+                                            <TextBox x:Name="AddressBox" FontFamily="{StaticResource MonoFont}" />
+                                        </DockPanel>
+                                    </StackPanel>
+                                    <StackPanel x:Name="PortPanel" Grid.Column="1" Width="72" Margin="16,0,0,0" Visibility="Collapsed">
+                                        <TextBlock Text="端口" Style="{StaticResource FieldLabel}" />
+                                        <TextBox x:Name="PortBox" FontFamily="{StaticResource MonoFont}" HorizontalContentAlignment="Center" />
+                                    </StackPanel>
+                                    <StackPanel x:Name="SecurityPanel" Grid.Column="2" Margin="16,0,0,0" Visibility="Collapsed">
+                                        <TextBlock Text="加密方式" Style="{StaticResource FieldLabel}" />
+                                        <ComboBox x:Name="SecurityBox" Width="148" SelectionChanged="OnKindChanged" />
+                                    </StackPanel>
+                                </Grid>
+                                <TextBlock x:Name="AddressHint" Style="{StaticResource Hint}" Margin="0,4,0,0" />
 
-                            <!-- 端口和加密方式只在 FTP 出现，贴在服务器右边；其他类型这两列不占位 -->
-                            <Grid Margin="0,12,0,0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <StackPanel>
-                                    <TextBlock x:Name="AddressLabel" Text="地址" Style="{StaticResource FieldLabel}" />
-                                    <DockPanel>
-                                        <Button x:Name="BrowseButton" DockPanel.Dock="Right" Content="选择…" Margin="8,0,0,0" Click="OnBrowse" />
-                                        <TextBox x:Name="AddressBox" FontFamily="{StaticResource MonoFont}" />
-                                    </DockPanel>
-                                </StackPanel>
-                                <StackPanel x:Name="PortPanel" Grid.Column="1" Width="72" Margin="16,0,0,0" Visibility="Collapsed">
-                                    <TextBlock Text="端口" Style="{StaticResource FieldLabel}" />
-                                    <TextBox x:Name="PortBox" FontFamily="{StaticResource MonoFont}" HorizontalContentAlignment="Center" />
-                                </StackPanel>
-                                <StackPanel x:Name="SecurityPanel" Grid.Column="2" Margin="16,0,0,0" Visibility="Collapsed">
-                                    <TextBlock Text="加密方式" Style="{StaticResource FieldLabel}" />
-                                    <ComboBox x:Name="SecurityBox" Width="148" SelectionChanged="OnKindChanged" />
-                                </StackPanel>
-                            </Grid>
-                            <TextBlock x:Name="AddressHint" Style="{StaticResource Hint}" Margin="0,4,0,0" />
-
-                            <StackPanel x:Name="RemoteFields">
                                 <StackPanel x:Name="DirPanel" Margin="0,12,0,0" Visibility="Collapsed">
                                     <TextBlock x:Name="DirLabel" Text="远程目录" Style="{StaticResource FieldLabel}" />
                                     <TextBox x:Name="DirBox" FontFamily="{StaticResource MonoFont}" />
                                     <TextBlock x:Name="DirHint" Style="{StaticResource Hint}" Margin="0,4,0,0" />
                                 </StackPanel>
 
-                                <Grid Margin="0,12,0,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="16" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel>
-                                        <TextBlock Text="用户名" Style="{StaticResource FieldLabel}" />
-                                        <TextBox x:Name="UserBox" />
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="2">
-                                        <TextBlock Text="密码" Style="{StaticResource FieldLabel}" />
-                                        <PasswordBox x:Name="PassBox" />
-                                    </StackPanel>
-                                </Grid>
-                                <TextBlock x:Name="AuthHint" Style="{StaticResource Hint}" Margin="0,4,0,0" Text="坚果云等网盘要填“应用密码”，不是登录密码" />
+                                <StackPanel x:Name="RemoteFields" Margin="0,20,0,0">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="16" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel>
+                                            <TextBlock Text="用户名" Style="{StaticResource FieldLabel}" />
+                                            <TextBox x:Name="UserBox" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2">
+                                            <TextBlock Text="密码" Style="{StaticResource FieldLabel}" />
+                                            <PasswordBox x:Name="PassBox" />
+                                        </StackPanel>
+                                    </Grid>
+                                    <TextBlock x:Name="AuthHint" Style="{StaticResource Hint}" Margin="0,4,0,0" Text="坚果云等网盘要填“应用密码”，不是登录密码" />
+                                    <CheckBox x:Name="AnyCertBox" Margin="0,12,0,0" Content="接受自签名证书（只在自己搭的服务器上打开）" />
+                                </StackPanel>
 
-                                <CheckBox x:Name="AnyCertBox" Margin="0,12,0,0" Content="接受自签名证书（只在自己搭的服务器上打开）" />
+                                <DockPanel Margin="0,20,0,0">
+                                    <Button DockPanel.Dock="Right" Style="{StaticResource DangerQuietButton}" Content="删除" Click="OnDelete" />
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button x:Name="SaveButton" Style="{StaticResource PrimaryButton}" Content="保存" Click="OnSave" />
+                                        <Button x:Name="TestButton" Content="测试连接" Margin="8,0,0,0" Click="OnTest" />
+                                    </StackPanel>
+                                </DockPanel>
+                                <TextBlock x:Name="StatusText" Style="{StaticResource StatusLine}" Foreground="{StaticResource Text2}" />
                             </StackPanel>
-
-                            <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
-                                <Button x:Name="SaveButton" Style="{StaticResource PrimaryButton}" Content="保存" Click="OnSave" />
-                                <Button x:Name="TestButton" Content="测试连接" Margin="8,0,0,0" Click="OnTest" />
-                                <Button Style="{StaticResource DangerQuietButton}" Content="删除" Margin="16,0,0,0" Click="OnDelete" />
-                            </StackPanel>
-                            <TextBlock x:Name="StatusText" FontSize="12" Margin="0,12,0,0" TextWrapping="Wrap" Foreground="{StaticResource Text2}" />
-                        </StackPanel>
-                    </ScrollViewer>
-                </DockPanel>
-            </Border>
-        </Grid>
+                        </ScrollViewer>
+                    </DockPanel>
+                </Grid>
+            </DockPanel>
+        </Border>
     </Grid>
 </UserControl>
