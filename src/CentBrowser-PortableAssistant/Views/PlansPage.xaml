@@ -316,7 +316,7 @@
                         </StackPanel>
                         <StackPanel Grid.Column="8">
                             <CheckBox IsChecked="{Binding IncludeSecrets}" Content="登录信息" />
-                            <TextBlock Text="密码和、Cookie、自动填充" />
+                            <TextBlock Text="密码、Cookie、自动填充" />
                             <TextBlock Style="{StaticResource ItemSize}" Text="{Binding SecretsSize}" />
                         </StackPanel>
                         <StackPanel Grid.Column="10">
