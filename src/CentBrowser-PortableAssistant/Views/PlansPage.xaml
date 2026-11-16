@@ -460,7 +460,9 @@
                         <TextBlock Style="{StaticResource ItemHint}" Text="这个方案是否加入自动备份" Margin="24,2,0,0" />
 
                         <CheckBox Margin="0,20,0,8" Content="{Binding PasswordCaption}"
-                                  IsChecked="{Binding RequirePassword}" IsEnabled="{Binding PasswordEditable}" />
+                                  IsChecked="{Binding RequirePassword}"
+                                  IsHitTestVisible="{Binding PasswordEditable}"
+                                  Focusable="{Binding PasswordEditable}" />
                         <DockPanel Visibility="{Binding RequirePassword, Converter={StaticResource Vis}}">
                             <Button x:Name="RevealButton" DockPanel.Dock="Right" Style="{StaticResource QuietButton}" Content="显示" Margin="4,0,0,0"
                                     VerticalAlignment="Center" Click="OnReveal" />

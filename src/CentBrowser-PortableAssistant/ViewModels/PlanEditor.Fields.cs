@@ -120,7 +120,12 @@ public sealed partial class PlanEditor
         get => PasswordLocked || _plan.RequirePassword;
         set
         {
-            if (PasswordLocked || _plan.RequirePassword == value) return;
+            if (PasswordLocked)
+            {
+                if (!value) Raise(nameof(RequirePassword));
+                return;
+            }
+            if (_plan.RequirePassword == value) return;
             _plan.RequirePassword = value;
             Changed();
             RaiseHint();
