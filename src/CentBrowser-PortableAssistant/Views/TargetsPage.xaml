@@ -97,16 +97,16 @@
             <DockPanel>
                 <Border DockPanel.Dock="Top" Style="{StaticResource SectionHead}">
                     <DockPanel Margin="16,12" MinHeight="24">
-                        <Button x:Name="AddButton" DockPanel.Dock="Right" Style="{StaticResource QuietButton}"
-                                Height="24" FontSize="12" VerticalAlignment="Center" Click="OnAdd">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Style="{StaticResource Icon}" Text="&#xE710;" FontSize="12" />
-                                <TextBlock Text="添加" Margin="8,0,0,0" />
-                            </StackPanel>
-                        </Button>
                         <TextBlock Text="目的地" FontSize="14" VerticalAlignment="Center" />
                     </DockPanel>
                 </Border>
+                <Button x:Name="AddButton" DockPanel.Dock="Top" Style="{StaticResource PrimaryButton}"
+                        Margin="8,8,8,0" HorizontalAlignment="Stretch" Click="OnAdd">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource Icon}" Text="&#xE710;" FontSize="12" />
+                        <TextBlock Text="添加" Margin="8,0,0,0" />
+                    </StackPanel>
+                </Button>
                 <StackPanel DockPanel.Dock="Bottom" Margin="16,4,16,16">
                     <TextBlock Style="{StaticResource Hint}" Text="备份先在本地打好包，再送到目的地" />
                     <TextBlock Style="{StaticResource Hint}" Margin="0,2,0,0" Text="断网时留在本地，网络恢复后自动重传" />
@@ -115,12 +115,20 @@
                          Margin="8,8,8,8" SelectionChanged="OnSelected">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <StackPanel Margin="0,4">
-                                <TextBlock x:Name="Title" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
-                                <TextBlock Text="{Binding KindLine}" Style="{StaticResource Hint}" Margin="0,2,0,0"
-                                           TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
-                            </StackPanel>
+                            <DockPanel Margin="0,4">
+                                <TextBlock x:Name="Arrow" DockPanel.Dock="Right" Style="{StaticResource Icon}" Text="&#xE76C;"
+                                           FontSize="12" Foreground="{StaticResource Accent}" Margin="8,0,0,0"
+                                           VerticalAlignment="Center" Visibility="Collapsed" />
+                                <StackPanel>
+                                    <TextBlock x:Name="Title" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{Binding KindLine}" Style="{StaticResource Hint}" Margin="0,2,0,0"
+                                               TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+                            </DockPanel>
                             <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                                    <Setter TargetName="Arrow" Property="Visibility" Value="Visible" />
+                                </DataTrigger>
                                 <DataTrigger Binding="{Binding Disabled}" Value="True">
                                     <Setter TargetName="Title" Property="Foreground" Value="{StaticResource Muted}" />
                                 </DataTrigger>
