@@ -3,7 +3,7 @@ using CentBrowser_PortableAssistant.Core.Settings;
 
 namespace CentBrowser_PortableAssistant.Core.Backup;
 
-/// <summary>按方案算出要带走的文件清单。缓存和打开的标签页不在白名单里，密码和 Cookie 只在勾了机密信息时加入。</summary>
+/// <summary>按方案算出要带走的文件清单。缓存和打开的标签页不在白名单里，密码和 Cookie 只在勾了登录信息时加入。</summary>
 public static class CollectPlanner
 {
     public const string RootFolder = "CentBrowser";
