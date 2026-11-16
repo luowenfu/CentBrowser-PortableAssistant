@@ -49,6 +49,16 @@ public class DestinationChecksTests
     }
 
     [Fact]
+    public void BackupStopsWhenPasswordIsShorterThanFour()
+    {
+        var target = new UploadTarget { Name = "坚果云", Address = "https://dav.example.com/dav/" };
+        var plan = ReadyPlan(target);
+        plan.PasswordProtected = SecretProtector.Protect("abc");
+        var message = BackupRunner.Validate(plan, new AppConfig { Targets = [target] });
+        Assert.Equal("“方案1”解压密码至少 4 个字符", message);
+    }
+
+    [Fact]
     public void BackupAllowsFilledAddress()
     {
         var target = new UploadTarget { Name = "坚果云", Address = "https://dav.example.com/dav/" };

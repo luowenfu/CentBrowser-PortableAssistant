@@ -234,6 +234,7 @@ public sealed partial class PlanEditor
         get
         {
             if (RequirePassword && string.IsNullOrEmpty(_password)) return "还没设置解压密码";
+            if (RequirePassword && _password.Length < Packer.MinPasswordLength) return Packer.PasswordLengthRule;
             if (_plan.Formats == ArchiveFormats.None) return "至少选一种打包格式";
             if (RequirePassword && FormatZip && !Packer.IsZipSafePassword(_password)) return Packer.ZipPasswordRule;
             if (Profiles.Count > 0 && !Profiles.Any(p => p.IsChecked)) return "至少选一个用户";

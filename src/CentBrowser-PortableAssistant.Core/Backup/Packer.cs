@@ -5,6 +5,10 @@ namespace CentBrowser_PortableAssistant.Core.Backup;
 /// <summary>把暂存目录打成方案要的格式。自解压 exe 就是 7z.sfx 后面接上 .7z 数据。</summary>
 public static class Packer
 {
+    public const int MinPasswordLength = 4;
+
+    public const string PasswordLengthRule = "解压密码至少 4 个字符";
+
     public const string ZipPasswordRule = "选了 .zip 格式时，密码只能用英文字母、数字和符号";
 
     /// <summary>7-Zip 生成 zip 时不接受非英文字符的密码。</summary>
@@ -23,6 +27,7 @@ public static class Packer
     {
         if (formats == ArchiveFormats.None) throw new ArgumentException("至少选一种打包格式");
         var locked = !string.IsNullOrEmpty(password);
+        if (locked && password!.Length < MinPasswordLength) throw new ArgumentException(PasswordLengthRule);
         if (locked && formats.HasFlag(ArchiveFormats.Zip) && !IsZipSafePassword(password!)) throw new ArgumentException(ZipPasswordRule);
         Directory.CreateDirectory(outputDir);
 

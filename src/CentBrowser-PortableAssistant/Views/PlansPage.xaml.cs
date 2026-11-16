@@ -247,6 +247,13 @@ public partial class PlansPage : UserControl
         return plan;
     }
 
+    private void OnSecretsChecked(object sender, RoutedEventArgs e)
+    {
+        if (sender is not CheckBox box || box.IsChecked != true) return;
+        MessageDialog.Warn(Window.GetWindow(this), "登录信息",
+            "「登录信息」会带走保存的密码、Cookie、自动填充的内容，属于敏感数据。便携版的 Cent Browser 换电脑仍可用，安装版只在本机可用。请知悉。");
+    }
+
     private void OnPasswordChanged(object sender, RoutedEventArgs e)
     {
         if (_editor is not null && _editor.Password != PasswordInput.Password) _editor.Password = PasswordInput.Password;

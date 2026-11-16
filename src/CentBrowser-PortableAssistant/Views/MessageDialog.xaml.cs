@@ -34,6 +34,18 @@ public partial class MessageDialog : Window
         dialog.ShowDialog();
     }
 
+    /// <summary>左边警告图标，右下角一个按钮。用于勾选后必须看一眼的说明。</summary>
+    public static void Warn(Window? owner, string title, string message)
+    {
+        var dialog = new MessageDialog(owner, title, message, null, null, "我知道了");
+        dialog.DialogWindow.Width = 480;
+        dialog.WarnIcon.Visibility = Visibility.Visible;
+        dialog.MessageText.FontSize = 13;
+        dialog.CancelButton.Visibility = Visibility.Collapsed;
+        dialog.OkButton.IsCancel = true;
+        dialog.ShowDialog();
+    }
+
     private static void SetText(System.Windows.Controls.TextBlock block, string? text)
     {
         block.Text = text ?? "";

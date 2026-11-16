@@ -14,6 +14,7 @@ public sealed class BackupRunner(HistoryStore history, UploadQueue queue)
         if (plan.NeedsArchivePassword())
         {
             if (string.IsNullOrEmpty(password)) return $"“{plan.Name}”还没设置解压密码";
+            if (password.Length < Packer.MinPasswordLength) return $"“{plan.Name}”{Packer.PasswordLengthRule}";
             if (plan.Formats.HasFlag(ArchiveFormats.Zip) && !Packer.IsZipSafePassword(password)) return Packer.ZipPasswordRule;
         }
         if (plan.Formats == ArchiveFormats.None) return $"“{plan.Name}”至少要选一种打包格式";
