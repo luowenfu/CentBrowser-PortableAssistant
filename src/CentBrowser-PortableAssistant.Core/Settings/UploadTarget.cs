@@ -17,7 +17,7 @@ public enum TargetKind
 /// <summary>备份要送达的地方：本地文件夹、SMB、WebDAV 或 FTP/FTPS。</summary>
 public sealed class UploadTarget
 {
-    public const int NameMaxLength = 16;
+    public const int NameMaxLength = 20;
 
     public string Id { get; set; } = BackupPlan.NewId();
 
