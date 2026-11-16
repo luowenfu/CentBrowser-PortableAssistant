@@ -261,7 +261,7 @@
             <HeaderedContentControl Style="{StaticResource StepCard}" Tag="3">
                 <HeaderedContentControl.Header>
                     <DockPanel>
-                        <TextBlock DockPanel.Dock="Right" Text="「登录信息」便携版带走可用；安装版仅本机可用" Style="{StaticResource Mono}"
+                        <TextBlock DockPanel.Dock="Right" Text="「登录信息」：浏览器是便携版带走可用，安装版仅本机可用" Style="{StaticResource Mono}"
                                    VerticalAlignment="Center"
                                    Visibility="{Binding IncludeSecrets, Converter={StaticResource Vis}}" />
                         <DockPanel Margin="0,0,16,0">
