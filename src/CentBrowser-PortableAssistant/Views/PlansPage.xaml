@@ -321,7 +321,7 @@
                         </StackPanel>
                         <StackPanel Grid.Column="10">
                             <CheckBox IsChecked="{Binding IncludeExtensions}" Content="扩展" />
-                            <TextBlock Text="下一步选" />
+                            <TextBlock Text="在下一步选" />
                             <TextBlock Style="{StaticResource ItemSize}" Text="{Binding ExtensionSize}" />
                         </StackPanel>
                     </Grid>
