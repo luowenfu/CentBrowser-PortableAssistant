@@ -187,6 +187,7 @@
                                               VerticalAlignment="Center" Checked="OnDisabledChanged" Unchecked="OnDisabledChanged" />
                                     <TextBox x:Name="NameBox" TextChanged="OnNameChanged" />
                                 </DockPanel>
+                                <TextBlock x:Name="NameLimitHint" Style="{StaticResource Hint}" Margin="0,4,0,0" />
 
                                 <!-- 端口和加密方式只在 FTP 出现，贴在服务器右边；其他类型这两列不占位 -->
                                 <Grid Margin="0,20,0,0">

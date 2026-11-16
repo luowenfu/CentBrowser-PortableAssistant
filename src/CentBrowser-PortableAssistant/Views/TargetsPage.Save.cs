@@ -13,7 +13,8 @@ public partial class TargetsPage
         if (_current is null) return null;
         var t = _current.Clone();
         t.Kind = SelectedKind;
-        t.Name = string.IsNullOrWhiteSpace(NameBox.Text) ? UploadTarget.KindLabel(t.Kind) : NameBox.Text.Trim();
+        var name = UploadTarget.LimitName(NameBox.Text);
+        t.Name = name.Length == 0 ? UploadTarget.KindLabel(t.Kind) : name;
         t.Address = AddressBox.Text.Trim();
         t.Port = ReadPort();
         t.RemoteDir = KindBox.SelectedIndex == FtpType ? DirBox.Text.Trim() : "";

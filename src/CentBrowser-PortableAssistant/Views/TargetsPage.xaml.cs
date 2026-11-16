@@ -95,6 +95,8 @@ public partial class TargetsPage : UserControl
     public TargetsPage()
     {
         InitializeComponent();
+        NameBox.MaxLength = UploadTarget.NameMaxLength;
+        NameLimitHint.Text = $"最多 {UploadTarget.NameMaxLength} 个字";
         KindBox.ItemsSource = Types;
         SecurityBox.ItemsSource = FtpModes.Select(m => m.Label).ToList();
         Loaded += (_, _) => Load(_current?.Id);
@@ -105,9 +107,9 @@ public partial class TargetsPage : UserControl
     {
         _loading = true;
         var targets = App.Services.Config.Targets;
-        var rows = targets.Select(t => new Row(t.Id, t.Name, UploadTarget.KindLabel(t.Kind), t.Disabled)).ToList();
+        var rows = targets.Select(t => new Row(t.Id, UploadTarget.LimitName(t.Name), UploadTarget.KindLabel(t.Kind), t.Disabled)).ToList();
         if (_draft is not null)
-            rows.Add(new Row(_draft.Id, $"{_draft.Name}（未保存）", UploadTarget.KindLabel(_draft.Kind), _draft.Disabled));
+            rows.Add(new Row(_draft.Id, $"{UploadTarget.LimitName(_draft.Name)}（未保存）", UploadTarget.KindLabel(_draft.Kind), _draft.Disabled));
         TargetList.ItemsSource = rows;
         var index = rows.FindIndex(r => r.Id == selectId);
         TargetList.SelectedIndex = index >= 0 ? index : rows.Count > 0 ? 0 : -1;
@@ -161,7 +163,7 @@ public partial class TargetsPage : UserControl
         };
         SecurityBox.SelectedIndex = Math.Max(ftpMode, 0);
         DisabledBox.IsChecked = _current.Disabled;
-        NameBox.Text = _current.Name;
+        NameBox.Text = UploadTarget.LimitName(_current.Name);
         _loading = false;
         RememberFields();
         ClearStatus();
@@ -200,8 +202,8 @@ public partial class TargetsPage : UserControl
 
     private string NameOf(string id)
     {
-        if (_draft?.Id == id) return $"{_draft.Name}（未保存）";
-        return App.Services.Config.Targets.FirstOrDefault(t => t.Id == id)?.Name ?? "";
+        if (_draft?.Id == id) return $"{UploadTarget.LimitName(_draft.Name)}（未保存）";
+        return UploadTarget.LimitName(App.Services.Config.Targets.FirstOrDefault(t => t.Id == id)?.Name ?? "");
     }
 
     private void OnNameChanged(object sender, TextChangedEventArgs e)

@@ -17,9 +17,18 @@ public enum TargetKind
 /// <summary>备份要送达的地方：本地文件夹、SMB、WebDAV 或 FTP/FTPS。</summary>
 public sealed class UploadTarget
 {
+    public const int NameMaxLength = 32;
+
     public string Id { get; set; } = BackupPlan.NewId();
 
     public string Name { get; set; } = "";
+
+    /// <summary>去掉首尾空白，超长的截到 <see cref="NameMaxLength"/>。</summary>
+    public static string LimitName(string name)
+    {
+        var trimmed = name.Trim();
+        return trimmed.Length <= NameMaxLength ? trimmed : trimmed[..NameMaxLength];
+    }
 
     public TargetKind Kind { get; set; } = TargetKind.WebDav;
 
