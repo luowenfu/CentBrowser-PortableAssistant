@@ -1,6 +1,8 @@
 using System.ComponentModel;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using CentBrowser_PortableAssistant.Core.Settings;
 using CentBrowser_PortableAssistant.Core.Upload;
 
@@ -97,10 +99,26 @@ public partial class TargetsPage : UserControl
         InitializeComponent();
         NameBox.MaxLength = UploadTarget.NameMaxLength;
         NameLimitHint.Text = $"最多 {UploadTarget.NameMaxLength} 个字";
+        SizeNameBox();
         KindBox.ItemsSource = Types;
         SecurityBox.ItemsSource = FtpModes.Select(m => m.Label).ToList();
         Loaded += (_, _) => Load(_current?.Id);
         Unloaded += (_, _) => _draft = null;
+    }
+
+    /// <summary>输入框刚好放下上限那么多个汉字，左右留出内边距和边框。</summary>
+    private void SizeNameBox()
+    {
+        var font = (FontFamily)FindResource("UiFont");
+        var sample = new FormattedText(
+            new string('\u5B57', UploadTarget.NameMaxLength),
+            CultureInfo.CurrentUICulture,
+            FlowDirection.LeftToRight,
+            new Typeface(font, FontStyles.Normal, FontWeights.Normal, FontStretches.Normal),
+            NameBox.FontSize,
+            Brushes.Black,
+            VisualTreeHelper.GetDpi(this).PixelsPerDip);
+        NameBox.Width = Math.Ceiling(sample.Width) + NameBox.Padding.Left + NameBox.Padding.Right + 2;
     }
 
     private void Load(string? selectId)

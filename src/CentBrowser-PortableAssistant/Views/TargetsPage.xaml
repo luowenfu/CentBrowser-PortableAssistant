@@ -182,11 +182,11 @@
                                 </Border>
 
                                 <TextBlock Text="名称" Style="{StaticResource FieldLabel}" Margin="0,20,0,4" />
-                                <DockPanel>
-                                    <CheckBox x:Name="DisabledBox" DockPanel.Dock="Right" Content="停用" Margin="12,0,0,0"
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBox x:Name="NameBox" HorizontalAlignment="Left" TextChanged="OnNameChanged" />
+                                    <CheckBox x:Name="DisabledBox" Content="停用" Margin="12,0,0,0"
                                               VerticalAlignment="Center" Checked="OnDisabledChanged" Unchecked="OnDisabledChanged" />
-                                    <TextBox x:Name="NameBox" TextChanged="OnNameChanged" />
-                                </DockPanel>
+                                </StackPanel>
                                 <TextBlock x:Name="NameLimitHint" Style="{StaticResource Hint}" Margin="0,4,0,0" />
 
                                 <!-- 端口和加密方式只在 FTP 出现，贴在服务器右边；其他类型这两列不占位 -->
