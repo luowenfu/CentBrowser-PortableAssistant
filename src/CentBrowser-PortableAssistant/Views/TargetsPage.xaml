@@ -145,8 +145,6 @@
                     <DockPanel Margin="16,12" MinHeight="24">
                         <TextBlock x:Name="EditorMeta" DockPanel.Dock="Right" FontSize="12"
                                    Foreground="{StaticResource Muted}" VerticalAlignment="Center" Margin="16,0,0,0" />
-                        <CheckBox x:Name="DisabledBox" DockPanel.Dock="Right" Content="停用" FontSize="12"
-                                  VerticalAlignment="Center" Checked="OnDisabledChanged" Unchecked="OnDisabledChanged" />
                         <TextBlock x:Name="EditorTitle" Text="设置" FontSize="14" VerticalAlignment="Center"
                                    TextTrimming="CharacterEllipsis" />
                     </DockPanel>
@@ -184,7 +182,11 @@
                                 </Border>
 
                                 <TextBlock Text="名称" Style="{StaticResource FieldLabel}" Margin="0,20,0,4" />
-                                <TextBox x:Name="NameBox" TextChanged="OnNameChanged" />
+                                <DockPanel>
+                                    <CheckBox x:Name="DisabledBox" DockPanel.Dock="Right" Content="停用" Margin="12,0,0,0"
+                                              VerticalAlignment="Center" Checked="OnDisabledChanged" Unchecked="OnDisabledChanged" />
+                                    <TextBox x:Name="NameBox" TextChanged="OnNameChanged" />
+                                </DockPanel>
 
                                 <!-- 端口和加密方式只在 FTP 出现，贴在服务器右边；其他类型这两列不占位 -->
                                 <Grid Margin="0,20,0,0">
