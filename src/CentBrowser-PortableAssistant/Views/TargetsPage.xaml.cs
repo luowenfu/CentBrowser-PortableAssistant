@@ -12,18 +12,16 @@ public partial class TargetsPage : UserControl
 {
     private sealed class Row : INotifyPropertyChanged
     {
-        public Row(string id, string name, string kind, bool disabled, bool draft = false)
+        public Row(string id, string name, string kind, bool disabled)
         {
             Id = id;
             Name = name;
             _kind = kind;
             _disabled = disabled;
-            IsDraft = draft;
         }
 
         public string Id { get; }
         public string Name { get; }
-        public bool IsDraft { get; }
 
         private string _kind;
         public string Kind
@@ -73,8 +71,6 @@ public partial class TargetsPage : UserControl
     /// <summary>点了添加但还没保存的目的地，关掉窗口或选别的就丢掉。</summary>
     private UploadTarget? _draft;
     private bool _loading;
-    private bool _reverting;
-    private bool _applyingKind;
     private string _testNote = "";
 
     /// <summary>四种类型各记各的地址，切换时不把路径或服务器带过去。</summary>
@@ -96,7 +92,7 @@ public partial class TargetsPage : UserControl
         var targets = App.Services.Config.Targets;
         var rows = targets.Select(t => new Row(t.Id, t.Name, UploadTarget.KindLabel(t.Kind), t.Disabled)).ToList();
         if (_draft is not null)
-            rows.Add(new Row(_draft.Id, $"{_draft.Name}（未保存）", UploadTarget.KindLabel(_draft.Kind), _draft.Disabled, draft: true));
+            rows.Add(new Row(_draft.Id, $"{_draft.Name}（未保存）", UploadTarget.KindLabel(_draft.Kind), _draft.Disabled));
         TargetList.ItemsSource = rows;
         var index = rows.FindIndex(r => r.Id == selectId);
         TargetList.SelectedIndex = index >= 0 ? index : rows.Count > 0 ? 0 : -1;
@@ -151,51 +147,12 @@ public partial class TargetsPage : UserControl
         StatusText.Foreground = (System.Windows.Media.Brush)FindResource("Text2");
         StatusText.Text = "";
         UpdateFields();
-        ApplyEditorMode();
-    }
-
-    private void ApplyEditorMode()
-    {
-        if (_current is null) return;
-        var creating = _draft?.Id == _current.Id;
-        EditorTitle.Text = creating ? "添加目的地" : $"编辑「{_current.Name}」";
-        EditorHint.Text = creating
-            ? "填好后点下方的添加。已有的目的地不会被改掉"
-            : "改的是这一条。要新增请点左侧的添加目的地";
-        SaveButton.Content = creating ? "添加" : "保存";
-        DeleteButton.Visibility = creating ? Visibility.Collapsed : Visibility.Visible;
-        CancelAddButton.Visibility = creating ? Visibility.Visible : Visibility.Collapsed;
-        KindPicker.Visibility = creating ? Visibility.Visible : Visibility.Collapsed;
-        KindSummary.Visibility = creating ? Visibility.Collapsed : Visibility.Visible;
-        if (!creating) KindName.Text = UploadTarget.KindLabel(_current.Kind);
-    }
-
-    private void OnChangeType(object sender, RoutedEventArgs e)
-    {
-        KindSummary.Visibility = Visibility.Collapsed;
-        KindPicker.Visibility = Visibility.Visible;
     }
 
     private void OnKindChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (_reverting)
-        {
-            UpdateFields();
-            return;
-        }
         if (!_loading && IsInitialized && sender == KindBox && KindBox.SelectedIndex >= 0)
-        {
-            if (!_applyingKind && _draft is null && NeedsKindConfirm())
-            {
-                var targetId = (TargetList.SelectedItem as Row)?.Id;
-                var newIndex = KindBox.SelectedIndex;
-                var oldIndex = PreviousTypeIndex(e);
-                if (targetId is not null)
-                    Dispatcher.BeginInvoke(() => HoldKindChange(targetId, oldIndex, newIndex));
-                return;
-            }
             SwapAddress(KindBox.SelectedIndex);
-        }
         UpdateFields();
         if (_loading || !IsInitialized || KindBox.SelectedIndex < 0) return;
         if (TargetList.SelectedItem is not Row row) return;
@@ -203,84 +160,6 @@ public partial class TargetsPage : UserControl
         row.Kind = UploadTarget.KindLabel(kind);
         if (_current?.Id == row.Id) _current.Kind = kind;
         if (_draft?.Id == row.Id) _draft.Kind = kind;
-        if (_draft is null)
-        {
-            KindName.Text = UploadTarget.KindLabel(kind);
-            KindPicker.Visibility = Visibility.Collapsed;
-            KindSummary.Visibility = Visibility.Visible;
-        }
-    }
-
-    private bool NeedsKindConfirm()
-    {
-        if (TargetList.SelectedItem is not Row row) return false;
-        var saved = App.Services.Config.Targets.FirstOrDefault(t => t.Id == row.Id);
-        return saved is not null && TypeIndex(saved.Kind) != KindBox.SelectedIndex;
-    }
-
-    private static int PreviousTypeIndex(SelectionChangedEventArgs e)
-    {
-        var previous = e.RemovedItems.OfType<string>().FirstOrDefault();
-        return previous is null ? -1 : Array.IndexOf(Types, previous);
-    }
-
-    private static int TypeIndex(TargetKind kind) => kind switch
-    {
-        TargetKind.LocalFolder => 0,
-        TargetKind.Smb => SmbType,
-        TargetKind.WebDav => WebDavType,
-        _ => FtpType,
-    };
-
-    private static TargetKind KindFromTypeIndex(int index) => index switch
-    {
-        0 => TargetKind.LocalFolder,
-        SmbType => TargetKind.Smb,
-        FtpType => TargetKind.FtpAuto,
-        _ => TargetKind.WebDav,
-    };
-
-    /// <summary>先把类型选回原来的，再问是改这一条还是另加一条。选中项要等这次选择事件结束才改得回去。</summary>
-    private void HoldKindChange(string targetId, int oldIndex, int newIndex)
-    {
-        if (!IsLoaded || _draft is not null) return;
-        if (oldIndex >= 0 && KindBox.SelectedIndex != oldIndex)
-        {
-            _reverting = true;
-            KindBox.SelectedIndex = oldIndex;
-            _reverting = false;
-        }
-        KindPicker.Visibility = Visibility.Collapsed;
-        KindSummary.Visibility = Visibility.Visible;
-        AskKindChange(targetId, newIndex);
-    }
-
-    /// <summary>改已有目的地的类型前先问。选添加新的就另开一条，原来的不动。</summary>
-    private void AskKindChange(string targetId, int newIndex)
-    {
-        if (!IsLoaded || _draft is not null) return;
-        if (TargetList.SelectedItem is not Row row || row.Id != targetId) return;
-        var saved = App.Services.Config.Targets.FirstOrDefault(t => t.Id == targetId);
-        if (saved is null || newIndex < 0 || newIndex >= Types.Length) return;
-        if (TypeIndex(saved.Kind) == newIndex) return;
-
-        var choice = MessageDialog.Choose(
-            Window.GetWindow(this),
-            "改的是现有目的地",
-            $"这会把「{saved.Name}」从{UploadTarget.KindLabel(saved.Kind)}改成{Types[newIndex]}",
-            "不会新建一条。要另存一条，点添加新的",
-            "改这一条",
-            "添加新的");
-        if (choice == DialogChoice.Alternate)
-        {
-            StartDraft(newIndex);
-            return;
-        }
-        if (choice != DialogChoice.Confirm) return;
-        if (TargetList.SelectedItem is not Row still || still.Id != targetId) return;
-        _applyingKind = true;
-        KindBox.SelectedIndex = newIndex;
-        _applyingKind = false;
     }
 
     private string KindLabelOf(string id)
@@ -423,8 +302,7 @@ public partial class TargetsPage : UserControl
         if (!t.Disabled && !PrepareLocalFolder(t)) return;
         if (!t.Disabled && !await EnsureWritable(t)) return;
         var targets = App.Services.Config.Targets;
-        var added = _draft?.Id == t.Id;
-        if (added)
+        if (_draft?.Id == t.Id)
         {
             targets.Add(t);
             _draft = null;
@@ -436,7 +314,7 @@ public partial class TargetsPage : UserControl
         App.Services.SaveConfig();
         Load(t.Id);
         StatusText.Foreground = (System.Windows.Media.Brush)FindResource("Success");
-        StatusText.Text = added ? "已添加" : "已保存";
+        StatusText.Text = "已保存";
     }
 
     private async void OnTest(object sender, RoutedEventArgs e)
@@ -523,20 +401,12 @@ public partial class TargetsPage : UserControl
         AddButton.IsEnabled = !busy;
     }
 
-    private void OnAdd(object sender, RoutedEventArgs e) => StartDraft(0);
-
-    private void OnCancelAdd(object sender, RoutedEventArgs e)
-    {
-        _draft = null;
-        Load(null);
-    }
-
-    private void StartDraft(int kindIndex)
+    private void OnAdd(object sender, RoutedEventArgs e)
     {
         _draft = new UploadTarget
         {
             Name = $"目的地 {App.Services.Config.Targets.Count + 1}",
-            Kind = KindFromTypeIndex(kindIndex),
+            Kind = TargetKind.LocalFolder,
         };
         Load(_draft.Id);
     }

@@ -85,15 +85,20 @@
         <Border Style="{StaticResource SectionCard}">
             <DockPanel>
                 <Border DockPanel.Dock="Top" Style="{StaticResource SectionHead}">
-                    <TextBlock Text="已有目的地" FontSize="14" Margin="16,12" VerticalAlignment="Center" />
+                    <DockPanel Margin="16,12" MinHeight="24">
+                        <Button x:Name="AddButton" DockPanel.Dock="Right" Style="{StaticResource QuietButton}"
+                                Height="24" FontSize="12" VerticalAlignment="Center" Click="OnAdd">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource Icon}" Text="&#xE710;" FontSize="12" />
+                                <TextBlock Text="添加" Margin="8,0,0,0" />
+                            </StackPanel>
+                        </Button>
+                        <TextBlock Text="目的地" FontSize="14" VerticalAlignment="Center" />
+                    </DockPanel>
                 </Border>
-                <StackPanel x:Name="AddBar" DockPanel.Dock="Bottom" Margin="16,8,16,16">
-                    <Button x:Name="AddButton" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Stretch"
-                            Content="添加目的地" Click="OnAdd" />
-                    <TextBlock Style="{StaticResource Hint}" HorizontalAlignment="Center" TextAlignment="Center" Margin="0,8,0,0"
-                               Text="添加不会改动已有的目的地" />
-                    <TextBlock Style="{StaticResource Hint}" HorizontalAlignment="Center" TextAlignment="Center" Margin="0,2,0,0"
-                               Text="备份先在本地打好包，再送到这里" />
+                <StackPanel DockPanel.Dock="Bottom" Margin="16,8,16,16">
+                    <TextBlock Style="{StaticResource Hint}" HorizontalAlignment="Center" TextAlignment="Center"
+                               Text="备份先在本地打好包，再送到目的地" />
                     <TextBlock Style="{StaticResource Hint}" HorizontalAlignment="Center" TextAlignment="Center" Margin="0,2,0,0"
                                Text="断网时留在本地，网络恢复后自动重传" />
                 </StackPanel>
@@ -106,9 +111,6 @@
                                 <TextBlock Text="{Binding KindLine}" Style="{StaticResource Mono}" Margin="0,2,0,0" />
                             </StackPanel>
                             <DataTemplate.Triggers>
-                                <DataTrigger Binding="{Binding IsDraft}" Value="True">
-                                    <Setter TargetName="Title" Property="Foreground" Value="{StaticResource Accent}" />
-                                </DataTrigger>
                                 <DataTrigger Binding="{Binding Disabled}" Value="True">
                                     <Setter TargetName="Title" Property="Foreground" Value="{StaticResource Muted}" />
                                 </DataTrigger>
@@ -132,10 +134,17 @@
                     </Style>
                 </Border.Style>
                 <DockPanel>
+                    <Border DockPanel.Dock="Top" Style="{StaticResource SectionHead}">
+                        <DockPanel Margin="16,12" MinHeight="24">
+                            <TextBlock Text="设置" FontSize="14" VerticalAlignment="Center" />
+                        </DockPanel>
+                    </Border>
                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="24">
                         <TextBlock Text="还没有目的地" FontSize="14" HorizontalAlignment="Center" />
                         <TextBlock Style="{StaticResource Hint}" Margin="0,4,0,0" HorizontalAlignment="Center" TextAlignment="Center"
-                                   Text="点左侧的添加目的地" />
+                                   Text="在左边点添加" />
+                        <TextBlock Style="{StaticResource Hint}" Margin="0,2,0,0" HorizontalAlignment="Center" TextAlignment="Center"
+                                   Text="备份会先在本地打好包，再送到这里" />
                     </StackPanel>
                 </DockPanel>
             </Border>
@@ -143,60 +152,32 @@
             <Border x:Name="Editor" Style="{StaticResource SectionCard}">
                 <DockPanel>
                     <Border DockPanel.Dock="Top" Style="{StaticResource SectionHead}">
-                        <StackPanel Margin="16,12">
-                            <TextBlock x:Name="EditorTitle" Text="编辑" FontSize="14" TextTrimming="CharacterEllipsis" />
-                            <TextBlock x:Name="EditorHint" Style="{StaticResource Hint}" Margin="0,2,0,0" TextWrapping="Wrap" />
-                        </StackPanel>
-                    </Border>
-
-                    <Border DockPanel.Dock="Bottom" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0" Padding="16,12">
-                        <StackPanel>
-                            <DockPanel>
-                                <Button x:Name="DeleteButton" DockPanel.Dock="Right" Style="{StaticResource DangerQuietButton}"
-                                        Content="删除" Click="OnDelete" />
-                                <Button x:Name="CancelAddButton" DockPanel.Dock="Right" Content="取消" Visibility="Collapsed"
-                                        Click="OnCancelAdd" />
-                                <StackPanel Orientation="Horizontal">
-                                    <Button x:Name="SaveButton" Style="{StaticResource PrimaryButton}" Content="保存" Click="OnSave" />
-                                    <Button x:Name="TestButton" Content="测试连接" Margin="8,0,0,0" Click="OnTest" />
-                                </StackPanel>
-                            </DockPanel>
-                            <TextBlock x:Name="StatusText" FontSize="12" Margin="0,8,0,0" TextWrapping="Wrap" Foreground="{StaticResource Text2}" />
-                        </StackPanel>
+                        <DockPanel Margin="16,12" MinHeight="24">
+                            <TextBlock Text="设置" FontSize="14" VerticalAlignment="Center" />
+                        </DockPanel>
                     </Border>
 
                     <ScrollViewer Style="{StaticResource FormScroll}">
-                        <StackPanel Margin="16,16,16,16">
-                            <StackPanel x:Name="KindSummary">
-                                <TextBlock Text="类型" Style="{StaticResource FieldLabel}" />
-                                <DockPanel>
-                                    <Button DockPanel.Dock="Right" Style="{StaticResource QuietButton}" Content="更改类型"
-                                            Height="24" Click="OnChangeType" />
-                                    <TextBlock x:Name="KindName" FontSize="14" VerticalAlignment="Center" />
-                                </DockPanel>
-                            </StackPanel>
-
-                            <StackPanel x:Name="KindPicker" Visibility="Collapsed">
-                                <TextBlock Text="类型" Style="{StaticResource FieldLabel}" />
-                                <Border Background="{StaticResource SurfaceStep}" CornerRadius="8" Padding="3">
-                                    <ListBox x:Name="KindBox" SelectionChanged="OnKindChanged"
-                                             Background="Transparent" BorderThickness="0" Padding="0"
-                                             Foreground="{StaticResource Text2}"
-                                             HorizontalContentAlignment="Stretch"
-                                             ItemContainerStyle="{StaticResource KindSegment}">
-                                        <ListBox.ItemsPanel>
-                                            <ItemsPanelTemplate>
-                                                <UniformGrid Columns="4" />
-                                            </ItemsPanelTemplate>
-                                        </ListBox.ItemsPanel>
-                                        <ListBox.Template>
-                                            <ControlTemplate TargetType="ListBox">
-                                                <ItemsPresenter />
-                                            </ControlTemplate>
-                                        </ListBox.Template>
-                                    </ListBox>
-                                </Border>
-                            </StackPanel>
+                        <StackPanel Margin="16,16,16,4">
+                            <TextBlock Text="类型" Style="{StaticResource FieldLabel}" />
+                            <Border Background="{StaticResource SurfaceStep}" CornerRadius="8" Padding="3">
+                                <ListBox x:Name="KindBox" SelectionChanged="OnKindChanged"
+                                         Background="Transparent" BorderThickness="0" Padding="0"
+                                         Foreground="{StaticResource Text2}"
+                                         HorizontalContentAlignment="Stretch"
+                                         ItemContainerStyle="{StaticResource KindSegment}">
+                                    <ListBox.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <UniformGrid Columns="4" />
+                                        </ItemsPanelTemplate>
+                                    </ListBox.ItemsPanel>
+                                    <ListBox.Template>
+                                        <ControlTemplate TargetType="ListBox">
+                                            <ItemsPresenter />
+                                        </ControlTemplate>
+                                    </ListBox.Template>
+                                </ListBox>
+                            </Border>
 
                             <TextBlock Text="目的地名称" Style="{StaticResource FieldLabel}" Margin="0,12,0,4" />
                             <DockPanel>
@@ -256,6 +237,13 @@
 
                                 <CheckBox x:Name="AnyCertBox" Margin="0,12,0,0" Content="接受自签名证书（只在自己搭的服务器上打开）" />
                             </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+                                <Button x:Name="SaveButton" Style="{StaticResource PrimaryButton}" Content="保存" Click="OnSave" />
+                                <Button x:Name="TestButton" Content="测试连接" Margin="8,0,0,0" Click="OnTest" />
+                                <Button Style="{StaticResource DangerQuietButton}" Content="删除" Margin="16,0,0,0" Click="OnDelete" />
+                            </StackPanel>
+                            <TextBlock x:Name="StatusText" FontSize="12" Margin="0,12,0,0" TextWrapping="Wrap" Foreground="{StaticResource Text2}" />
                         </StackPanel>
                     </ScrollViewer>
                 </DockPanel>
