@@ -32,7 +32,7 @@ public sealed class TrayIcon : IDisposable
     public event Action? OpenRequested;
     /// <summary>方案 id 为空表示全部。第二个参数为真表示快速。</summary>
     public event Action<string?, bool>? BackupRequested;
-    /// <summary>慢速限速，单位 KB/s，0 是不限速。</summary>
+    /// <summary>慢速设置所选的上传限速，单位 KB/s，0 是不限速。</summary>
     public event Action<int>? LimitRequested;
     public event Action? RecordsRequested;
     public event Action? ExitRequested;
@@ -48,7 +48,7 @@ public sealed class TrayIcon : IDisposable
         _icon = new NotifyIcon { Icon = _base, Text = App.TrayTitle(), Visible = true };
 
         _backupMenu = new ToolStripMenuItem("立即备份");
-        _limitMenu = new ToolStripMenuItem("慢速限速");
+        _limitMenu = new ToolStripMenuItem("慢速设置");
         foreach (var (kbps, label) in SpeedLimits.Options)
         {
             var item = new ToolStripMenuItem(label) { Tag = kbps };
@@ -58,9 +58,9 @@ public sealed class TrayIcon : IDisposable
 
         var menu = new ContextMenuStrip { ShowImageMargin = true };
         menu.Items.Add("打开主界面", null, (_, _) => OpenRequested?.Invoke());
-        menu.Items.Add("查询记录", null, (_, _) => RecordsRequested?.Invoke());
         menu.Items.Add(_limitMenu);
         menu.Items.Add(_backupMenu);
+        menu.Items.Add("查询记录", null, (_, _) => RecordsRequested?.Invoke());
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add("退出", null, (_, _) => ExitRequested?.Invoke());
         _icon.ContextMenuStrip = menu;
