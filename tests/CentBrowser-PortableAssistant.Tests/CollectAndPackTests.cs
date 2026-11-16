@@ -154,16 +154,6 @@ public sealed class CollectAndPackTests : IDisposable
     }
 
     [Fact]
-    public void ProgramSizeSkipsScriptsAndCountsTheBrowser()
-    {
-        var size = CollectPlanner.MeasureProgram(_browser.Install);
-        var expected = new FileInfo(_browser.Path_("chrome.exe")).Length
-            + new FileInfo(_browser.Path_("1.2.3.4/chrome.dll")).Length
-            + new FileInfo(_browser.Path_("Dictionaries/en.bdic")).Length;
-        Assert.Equal(expected, size);
-    }
-
-    [Fact]
     public void SecretsKeepMachineKeyAndFullWebData()
     {
         var plan = OnlyProfile1WithAlpha();

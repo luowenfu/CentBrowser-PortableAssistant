@@ -60,36 +60,6 @@ public sealed partial class PlanEditor
         set { _plan.IncludeProgram = value; Changed(); }
     }
 
-    public string ProgramSize => _programSize;
-
-    private string _programSize = "…";
-
-    private void LoadProgramSize()
-    {
-        if (_install is not { } install)
-        {
-            _programSize = "—";
-            Raise(nameof(ProgramSize));
-            return;
-        }
-        var context = SynchronizationContext.Current;
-        Task.Run(() =>
-        {
-            try { return CollectPlanner.MeasureProgram(install); }
-            catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException) { return 0L; }
-        }).ContinueWith(t =>
-        {
-            void Apply()
-            {
-                if (!t.IsCompletedSuccessfully) return;
-                _programSize = Format.Size(t.Result);
-                Raise(nameof(ProgramSize));
-            }
-            if (context is null) Apply();
-            else context.Post(_ => Apply(), null);
-        });
-    }
-
     public ArchiveFormats ArchiveFormat
     {
         get => _plan.Formats;

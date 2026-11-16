@@ -105,19 +105,4 @@ public static class CollectPlanner
             if (Directory.Exists(path)) items.Add(new CollectItem(path, Path.Combine(RootFolder, dir), CollectKind.Copy, IsProgram: true));
         }
     }
-
-    /// <summary>会打进包里的浏览器程序有多大。脚本和日志不算。</summary>
-    public static long MeasureProgram(BrowserInstall install)
-    {
-        long bytes = 0;
-        foreach (var file in Directory.GetFiles(install.RootDir))
-        {
-            if (SkippedRootExtensions.Contains(Path.GetExtension(file), StringComparer.OrdinalIgnoreCase)) continue;
-            bytes += new FileInfo(file).Length;
-        }
-        bytes += ProfilePaths.SizeOf(install.VersionDir);
-        foreach (var dir in ProgramDirs)
-            bytes += ProfilePaths.SizeOf(Path.Combine(install.RootDir, dir));
-        return bytes;
-    }
 }
