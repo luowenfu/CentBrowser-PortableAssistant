@@ -34,6 +34,7 @@ public sealed partial class PlanEditor : ObservableObject
         LoadTargets(config.Targets, null);
 
         Current = Profiles.FirstOrDefault(p => p.IsChecked) ?? Profiles.FirstOrDefault();
+        LoadProgramSize();
     }
 
     /// <summary>停用的目的地不出现在主页面，但方案里原来勾过的还留着，重新启用后照旧勾上。</summary>
