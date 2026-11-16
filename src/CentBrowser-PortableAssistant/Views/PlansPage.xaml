@@ -202,16 +202,7 @@
                             <TextBlock Text="浏览器" />
                         </DockPanel>
                     </HeaderedContentControl.Header>
-                    <StackPanel>
-                        <v:BrowserCard x:Name="Browser" />
-                        <Border Height="1" Background="{StaticResource Line}" Margin="0,16,0,12" />
-                        <DockPanel>
-                            <TextBlock DockPanel.Dock="Right" Text="{Binding ProgramSize}" Style="{StaticResource Mono}"
-                                       VerticalAlignment="Center" />
-                            <CheckBox IsChecked="{Binding IncludeProgram}" Content="带上浏览器程序" />
-                        </DockPanel>
-                        <TextBlock Style="{StaticResource ItemHint}" Margin="24,2,0,0" Text="勾上后换台电脑解压就能用，不勾仅用户数据" />
-                    </StackPanel>
+                    <v:BrowserCard x:Name="Browser" />
                 </HeaderedContentControl>
 
                 <HeaderedContentControl Grid.Row="2" Style="{StaticResource StepCard}" Tag="2" x:Name="ProfilesStep">
@@ -463,7 +454,13 @@
             <HeaderedContentControl Style="{StaticResource StepCard}" Tag="5" Header="打包" Padding="0,0,0,8">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="16,0,16,8">
-                        <CheckBox IsChecked="{Binding AutoBackup}" Content="加入自动备份" />
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Right" Text="{Binding ProgramSize}" Style="{StaticResource Mono}"
+                                       VerticalAlignment="Center" />
+                            <CheckBox IsChecked="{Binding IncludeProgram}" Content="带上浏览器程序" />
+                        </DockPanel>
+                        <TextBlock Style="{StaticResource ItemHint}" Margin="24,2,0,0" Text="勾上后换台电脑解压就能用，不勾仅用户数据" />
+                        <CheckBox IsChecked="{Binding AutoBackup}" Content="加入自动备份" Margin="0,12,0,0" />
                         <TextBlock Style="{StaticResource ItemHint}" Text="这个方案是否加入自动备份" Margin="24,2,0,0" />
 
                         <CheckBox Margin="0,20,0,8" Content="{Binding PasswordCaption}"
