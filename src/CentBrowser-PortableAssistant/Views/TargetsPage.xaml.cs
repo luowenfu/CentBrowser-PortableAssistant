@@ -229,7 +229,6 @@ public partial class TargetsPage : UserControl
         if (_loading || !IsInitialized) return;
         if (TargetList.SelectedItem is Row row)
             row.Name = ListName(NameBox.Text, row.Id);
-        RefreshHeader();
         ClearStatus();
     }
 
@@ -244,8 +243,6 @@ public partial class TargetsPage : UserControl
     private void RefreshHeader()
     {
         if (!IsInitialized || _current is null) return;
-        var name = NameBox.Text.Trim();
-        EditorTitle.Text = name.Length > 0 ? name : UploadTarget.KindLabel(SelectedKind);
         var draft = _draft?.Id == _current.Id;
         EditorMeta.Text = draft ? "未保存" : UploadTarget.KindLabel(SelectedKind);
         EditorMeta.Visibility = Visibility.Visible;
