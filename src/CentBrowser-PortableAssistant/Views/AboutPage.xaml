@@ -81,7 +81,7 @@
                 <StackPanel MaxWidth="600" HorizontalAlignment="Left">
                 <TextBlock Text="能做什么" Style="{StaticResource SectionTitle}" Margin="0,32,0,8" />
                 <TextBox Style="{StaticResource IntroText}"
-                         Text="把 Cent Browser 浏览器的用户书签、历史、设置、网站偏好、登录信息和扩展，按你的选择打成自解压 exe 或压缩包，送到 SMB、WebDAV、FTP 或本地文件夹。带走浏览器，换一台电脑解压就能用。" />
+                         Text="把 Cent Browser 浏览器的用户书签、历史、设置、网站偏好、登录信息和扩展，按你的选择打成自解压 exe 或压缩包，送到 SMB、WebDAV、FTP 或本地文件夹。带走浏览器，换台电脑解压就能用。" />
                 <TextBox Style="{StaticResource IntroText}" Margin="0,15,0,-4"
                          Text="打开自动备份并设好内容后，浏览器空闲时会在后台默默备好，不必再管，也几乎不占资源。" />
                 <TextBox Style="{StaticResource IntroText}" Margin="0,15,0,-4"
