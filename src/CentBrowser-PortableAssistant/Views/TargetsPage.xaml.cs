@@ -136,10 +136,8 @@ public partial class TargetsPage : UserControl
         EmptyPanel.Visibility = has ? Visibility.Collapsed : Visibility.Visible;
         if (!has)
         {
-            EditorTitle.Text = "设置";
-            EditorMeta.Text = "";
-            EditorMeta.Visibility = Visibility.Collapsed;
-            DisabledBox.Visibility = Visibility.Collapsed;
+            EditorTitle.Text = "";
+            HeaderActions.Visibility = Visibility.Collapsed;
         }
         _loading = false;
         ShowSelected();
@@ -243,10 +241,8 @@ public partial class TargetsPage : UserControl
     private void RefreshHeader()
     {
         if (!IsInitialized || _current is null) return;
-        var draft = _draft?.Id == _current.Id;
-        EditorMeta.Text = draft ? "未保存" : UploadTarget.KindLabel(SelectedKind);
-        EditorMeta.Visibility = Visibility.Visible;
-        DisabledBox.Visibility = Visibility.Visible;
+        EditorTitle.Text = UploadTarget.KindLabel(SelectedKind);
+        HeaderActions.Visibility = Visibility.Visible;
     }
 
     private void OnDisabledChanged(object sender, RoutedEventArgs e)

@@ -143,9 +143,14 @@
             <DockPanel>
                 <Border DockPanel.Dock="Top" Style="{StaticResource SectionHead}">
                     <DockPanel Margin="16,12" MinHeight="24">
-                        <TextBlock x:Name="EditorMeta" DockPanel.Dock="Right" FontSize="12"
-                                   Foreground="{StaticResource Muted}" VerticalAlignment="Center" Margin="16,0,0,0" />
-                        <TextBlock x:Name="EditorTitle" Text="设置" FontSize="14" VerticalAlignment="Center"
+                        <StackPanel x:Name="HeaderActions" DockPanel.Dock="Right" Orientation="Horizontal"
+                                    VerticalAlignment="Center">
+                            <CheckBox x:Name="DisabledBox" Content="停用" VerticalAlignment="Center"
+                                      Checked="OnDisabledChanged" Unchecked="OnDisabledChanged" />
+                            <Button x:Name="DeleteButton" Style="{StaticResource DangerQuietButton}" Content="删除"
+                                    Height="24" Padding="8,0" Margin="12,0,0,0" VerticalAlignment="Center" Click="OnDelete" />
+                        </StackPanel>
+                        <TextBlock x:Name="EditorTitle" FontSize="14" VerticalAlignment="Center"
                                    TextTrimming="CharacterEllipsis" />
                     </DockPanel>
                 </Border>
@@ -182,11 +187,7 @@
                                 </Border>
 
                                 <TextBlock Text="名称" Style="{StaticResource FieldLabel}" Margin="0,20,0,4" />
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBox x:Name="NameBox" HorizontalAlignment="Left" TextChanged="OnNameChanged" />
-                                    <CheckBox x:Name="DisabledBox" Content="停用" Margin="12,0,0,0"
-                                              VerticalAlignment="Center" Checked="OnDisabledChanged" Unchecked="OnDisabledChanged" />
-                                </StackPanel>
+                                <TextBox x:Name="NameBox" HorizontalAlignment="Left" TextChanged="OnNameChanged" />
                                 <TextBlock x:Name="NameLimitHint" Style="{StaticResource Hint}" Margin="0,4,0,0" />
 
                                 <!-- 端口和加密方式只在 FTP 出现，贴在服务器右边；其他类型这两列不占位 -->
@@ -241,13 +242,10 @@
                                               Checked="OnFormChanged" Unchecked="OnFormChanged" />
                                 </StackPanel>
 
-                                <DockPanel Margin="0,20,0,0">
-                                    <Button DockPanel.Dock="Right" Style="{StaticResource DangerQuietButton}" Content="删除" Click="OnDelete" />
-                                    <StackPanel Orientation="Horizontal">
-                                        <Button x:Name="SaveButton" Style="{StaticResource PrimaryButton}" Content="保存" Click="OnSave" />
-                                        <Button x:Name="TestButton" Content="测试连接" Margin="8,0,0,0" Click="OnTest" />
-                                    </StackPanel>
-                                </DockPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
+                                    <Button x:Name="SaveButton" Style="{StaticResource PrimaryButton}" Content="保存" Click="OnSave" />
+                                    <Button x:Name="TestButton" Content="测试连接" Margin="8,0,0,0" Click="OnTest" />
+                                </StackPanel>
                                 <TextBlock x:Name="StatusText" Style="{StaticResource StatusLine}" Foreground="{StaticResource Text2}" />
                             </StackPanel>
                         </ScrollViewer>
