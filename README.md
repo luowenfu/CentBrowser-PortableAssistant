@@ -17,8 +17,8 @@
 
 ## 下载
 
-- [不带运行时](https://github.com/luowenfu/CentBrowser-PortableAssistant/releases/download/v1.7/CentBrowser-PortableAssistant-v1.7.exe)（7.7 MB，需要 .NET 8 桌面运行时）
-- [自带运行时](https://github.com/luowenfu/CentBrowser-PortableAssistant/releases/download/v1.7/CentBrowser-PortableAssistant-v1.7-selfcontained.exe)（71.7 MB，不用另装运行时）
+- [不带运行时](https://github.com/luowenfu/CentBrowser-PortableAssistant/releases/download/v1.8/CentBrowser-PortableAssistant-v1.8.exe)（7.7 MB，需要 .NET 8 桌面运行时）
+- [自带运行时](https://github.com/luowenfu/CentBrowser-PortableAssistant/releases/download/v1.8/CentBrowser-PortableAssistant-v1.8-selfcontained.exe)（71.7 MB，不用另装运行时）
 
 ## 使用
 
