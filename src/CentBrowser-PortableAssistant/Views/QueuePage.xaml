@@ -138,12 +138,12 @@
                                                 </Style.Triggers>
                                             </Style>
                                         </Border.Style>
-                                        <!-- 日期、方式和方案按内容撑开并对齐。剩下的宽度给文件名 -->
+                                        <!-- 日期和方式按内容撑开。方案名过长就省略，剩下的宽度给文件名 -->
                                         <Grid VerticalAlignment="Center">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto" SharedSizeGroup="RecordWhen" MinWidth="140" />
                                                 <ColumnDefinition Width="Auto" SharedSizeGroup="RecordTrigger" />
-                                                <ColumnDefinition Width="Auto" SharedSizeGroup="RecordPlan" />
+                                                <ColumnDefinition Width="Auto" SharedSizeGroup="RecordPlan" MaxWidth="120" />
                                                 <ColumnDefinition Width="*" />
                                             </Grid.ColumnDefinitions>
                                             <TextBlock Text="{Binding When}" FontSize="12" Foreground="{StaticResource Text}"
@@ -151,7 +151,7 @@
                                                        ToolTip="{Binding When}" />
                                             <TextBlock Grid.Column="1" Text="{Binding Trigger}" Margin="12,0,0,0"
                                                        Foreground="{StaticResource Text2}" VerticalAlignment="Center" />
-                                            <TextBlock Grid.Column="2" Text="{Binding Plan}" Margin="12,0,0,0"
+                                            <TextBlock Grid.Column="2" Text="{Binding Plan}" Margin="12,0,0,0" MaxWidth="108"
                                                        Foreground="{StaticResource Text2}" HorizontalAlignment="Left" VerticalAlignment="Center"
                                                        TextTrimming="CharacterEllipsis" ToolTip="{Binding Plan}" />
                                             <Grid Grid.Column="3" VerticalAlignment="Center">
