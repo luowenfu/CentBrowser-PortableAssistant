@@ -41,7 +41,7 @@
                     <TextBlock x:Name="EmptyText" Text="没有待上传的文件" Foreground="{StaticResource Muted}" Margin="16,12" />
                     <ScrollViewer x:Name="JobScroll" MaxHeight="240" VerticalScrollBarVisibility="Auto"
                                   HorizontalScrollBarVisibility="Disabled">
-                        <ItemsControl x:Name="Jobs">
+                        <ItemsControl x:Name="Jobs" Grid.IsSharedSizeScope="True">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Border Padding="16,8,16,8" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1">
@@ -57,7 +57,7 @@
                                         </Border.Style>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="96" />
+                                                <ColumnDefinition Width="Auto" SharedSizeGroup="JobWhen" MinWidth="140" />
                                                 <ColumnDefinition Width="80" />
                                                 <ColumnDefinition Width="144" />
                                                 <ColumnDefinition x:Name="NameCol" Width="*" />
@@ -138,11 +138,12 @@
                                                 </Style.Triggers>
                                             </Style>
                                         </Border.Style>
+                                        <!-- 日期、方式和方案按内容撑开并对齐。剩下的宽度给文件名 -->
                                         <Grid VerticalAlignment="Center">
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="96" />
-                                                <ColumnDefinition Width="80" />
-                                                <ColumnDefinition Width="Auto" MaxWidth="120" />
+                                                <ColumnDefinition Width="Auto" SharedSizeGroup="RecordWhen" MinWidth="140" />
+                                                <ColumnDefinition Width="Auto" SharedSizeGroup="RecordTrigger" />
+                                                <ColumnDefinition Width="Auto" SharedSizeGroup="RecordPlan" />
                                                 <ColumnDefinition Width="*" />
                                             </Grid.ColumnDefinitions>
                                             <TextBlock Text="{Binding When}" FontSize="12" Foreground="{StaticResource Text}"
@@ -150,7 +151,7 @@
                                                        ToolTip="{Binding When}" />
                                             <TextBlock Grid.Column="1" Text="{Binding Trigger}" Margin="12,0,0,0"
                                                        Foreground="{StaticResource Text2}" VerticalAlignment="Center" />
-                                            <TextBlock Grid.Column="2" Text="{Binding Plan}" Margin="12,0,0,0" MaxWidth="108"
+                                            <TextBlock Grid.Column="2" Text="{Binding Plan}" Margin="12,0,0,0"
                                                        Foreground="{StaticResource Text2}" HorizontalAlignment="Left" VerticalAlignment="Center"
                                                        TextTrimming="CharacterEllipsis" ToolTip="{Binding Plan}" />
                                             <Grid Grid.Column="3" VerticalAlignment="Center">

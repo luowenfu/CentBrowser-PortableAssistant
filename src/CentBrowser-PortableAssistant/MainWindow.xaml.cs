@@ -83,7 +83,7 @@ public partial class MainWindow : Window
     public void ShowPlan(string planId) => Plans.ShowPlan(planId);
 
     public void OpenQueue() => HoldClose(() =>
-        ToolWindow.ShowPage(this, "查询记录", _queue ??= new QueuePage(), 1120, 840));
+        ToolWindow.ShowPage(this, "查询记录", _queue ??= new QueuePage(), 1240, 840));
 
     /// <summary>
     /// 查询记录关掉的同时，主窗口有时也会收到关闭。这段时间里忽略这次关闭。
