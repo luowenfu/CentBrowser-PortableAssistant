@@ -6,16 +6,10 @@ using CentBrowser_PortableAssistant.Core.Update;
 
 namespace CentBrowser_PortableAssistant.Services;
 
-/// <summary>检查新版本的节奏和结果。界面只读 <see cref="Offer"/>。</summary>
+/// <summary>检查新版本的结果。启动时查一次，之后每次打开主页面再查。界面只读 <see cref="Offer"/>。</summary>
 public sealed class UpdateService
 {
-    private static readonly TimeSpan Gap = TimeSpan.FromMinutes(10);
-    private static readonly TimeSpan Fresh = TimeSpan.FromHours(12);
-
     private int _running;
-    private DateTime _lastAttempt = DateTime.MinValue;
-    private DateTime? _lastSuccess;
-    private bool _lastFailed = true;
     private DateTime? _giteeBlocked;
     private DateTime? _githubBlocked;
     private ReleaseInfo? _gitee;
@@ -32,26 +26,17 @@ public sealed class UpdateService
 
     public void StopDownload() => CancelDownload?.Invoke();
 
-    public void CheckOnLaunch() => Start(scheduled: false);
+    public void CheckOnLaunch() => Start();
 
-    public void CheckOnShow() => Start(scheduled: true);
+    public void CheckOnShow() => Start();
 
-    private void Start(bool scheduled)
+    private void Start()
     {
         if (Debugger.IsAttached) return;
         var exe = Environment.ProcessPath;
         if (!ExeSwap.CanCheck(exe)) return;
-        if (scheduled && !Due()) return;
         if (Interlocked.CompareExchange(ref _running, 1, 0) != 0) return;
-        _lastAttempt = DateTime.UtcNow;
         _ = RunAsync(exe!);
-    }
-
-    private bool Due()
-    {
-        if (DateTime.UtcNow - _lastAttempt < Gap) return false;
-        if (_lastFailed || _lastSuccess is null) return true;
-        return DateTime.UtcNow - _lastSuccess.Value > Fresh;
     }
 
     private async Task RunAsync(string exe)
@@ -75,9 +60,7 @@ public sealed class UpdateService
         if (outcome.GitHubBlockedUntil is { } githubUntil) _githubBlocked = githubUntil;
         if (!outcome.GiteeFailed) _gitee = outcome.Gitee;
         if (!outcome.GitHubFailed) _github = outcome.GitHub;
-        _lastFailed = outcome.GiteeFailed || outcome.GitHubFailed;
         if (!outcome.AnySucceeded) return;
-        _lastSuccess = DateTime.UtcNow;
         if (DialogOpen) return;
         long length;
         try { length = new FileInfo(exe).Length; }
